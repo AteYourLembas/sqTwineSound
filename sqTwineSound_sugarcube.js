@@ -1,67 +1,59 @@
-//    sqTwineSound HTML5 Sound Macro Suite
-//    Copyright 2014 Tory Hoke
-//
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
-//     http://www.sub-q.com
-//     @toryhoke
-//
-//     Download/Documentation
-//         https://github.com/AteYourLembas/sqTwineSound
-//
-//     FAQ / Q & A
-//         http://sub-q.com/stackfauxchange
-//
-//     Feature Requests
-//         http://sub-q.com/forum/features
-//
-//
-// This suite based on Twine: HTML5 sound macros 
-// by Leon Arnott of Glorious Trainwrecks
-// the content and influence of which appear
-// under a Creative Commons CC0 1.0 Universal License
-//     http://www.glorioustrainwrecks.com/node/5061
-//
-//
-// If this JavaScript code is minimized, you're probably not reading this.
-// Even so, here is the tool that makes code beautiful again:
-//     http://jsbeautifier.org
-//
-// If you're getting ready to use this script and want it minimized
-// for download efficiency:
-//     http://jscompress.com/
-//
-// If you're making changes to this script and want to check it
-// for common errors:
-//     http://jshint.com/
-//
-//
-//
-// This suite contains the following macros
-//
-//     playsound, playsounds, updatevolume,
-//     pausesound, pauseallsound, 
-//     stopsound, stopallsound
-//     loopsound, unloopsound
-//     fadeinsound, fadeinsounds, fadeoutsound, fadeoutsounds
-//     quieter, louder
-//     jumpscare
-//
-//     PLEASE GIVE YOUR READER A STARTLE WARNING BEFORE USING JUMPSCARE!
-//
-//
-//
+/*
+sqTwineSound HTML5 Sound Macro Suite
+Copyright 2014 Tory Hoke
+
+Theme URI: http://www.dezzain.com/wordpress-themes/mesocolumn/
+Description: Mesocolumn is a Responsive HTML5 and CSS3 WordPress Theme that support BuddyPress, BBPress, WooCommerce and Jigoshop and comes with Unlimited Color Choice on Menu for category and pages, Background, Layout, Footer, Sidebar and Design packed 600+ Google Webfonts Selection.
+Version: 0.8.0
+Author: Tory Hoke
+Author URI: http://www.dezzain.com
+License: GNU General Public License
+License URI: http://www.opensource.org/licenses/gpl-license.php
+
+This suite based on Twine: HTML5 sound macros 
+by Leon Arnott of Glorious Trainwrecks
+the source and influence of which appear
+under a Creative Commons CC0 1.0 Universal License
+    http://www.glorioustrainwrecks.com/node/5061
+
+  
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+  
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+       Download/Documentation
+         https://github.com/AteYourLembas/sqTwineSound
+
+       FAQ / Q & A (password: ThinkVast)
+         http://sub-q.com/questions
+
+       Feature Requests (password: ThinkVast)
+         http://sub-q.com/forums/forum/feature-requests/
+
+      sub-Q.com is password-protected while it's in beta (through 2014.)
+      Please kick the tires and report any issues via the sub-Q.com Contact form.
+
+
+ This suite contains the following macros
+
+     updatevolume, playsound, playsounds
+     pausesound, pauseallsound
+     stopsound, stopallsound
+     loopsound, unloopsound
+     fadeinsound, fadeinsounds, fadeoutsound, fadeoutsounds
+     quieter, louder
+     jumpscare <-- PLEASE GIVE YOUR READER A STARTLE WARNING BEFORE USING JUMPSCARE!
+
+*/
 
 (function () {
     version.extensions.soundMacros = {
@@ -392,7 +384,7 @@
     *   SUPPORTING FUNCTIONS FOR THE MACROS
     /***********************************************************
     /
-    /  Here be monsters. Proceed with caution.
+    /  Here be monsters.
     /
     */
 
