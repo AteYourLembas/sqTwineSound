@@ -2,21 +2,26 @@
 sqTwineSound HTML5 Sound Macro Suite
 Copyright 2014 Tory Hoke
 
-Theme URI: http://www.dezzain.com/wordpress-themes/mesocolumn/
-Description: Mesocolumn is a Responsive HTML5 and CSS3 WordPress Theme that support BuddyPress, BBPress, WooCommerce and Jigoshop and comes with Unlimited Color Choice on Menu for category and pages, Background, Layout, Footer, Sidebar and Design packed 600+ Google Webfonts Selection.
+Program URI: http://www.sub-q.com/plugins/sqTwineSound/
+Description: Sound macros for Twine creations, including controls for volume, fade interval, and playing multiple tracks at once.
 Version: 0.8.0
 Author: Tory Hoke
-Author URI: http://www.dezzain.com
+Author URI: http://www.toryhoke.com
 License: GNU General Public License
 License URI: http://www.opensource.org/licenses/gpl-license.php
+Repository: https://github.com/AteYourLembas/sqTwineSound
+FAQ / Q & A: http://sub-q.com/questions (password: ThinkVast)
+Bug Reports/Feature Requests: http://sub-q.com/forums/topic/what-would-you-like-to-see-sqtwinesound-do-that-its-not-doing/ (password: ThinkVast)
 
-This suite based on Twine: HTML5 sound macros 
-by Leon Arnott of Glorious Trainwrecks
-the source and influence of which appear
-under a Creative Commons CC0 1.0 Universal License
-    http://www.glorioustrainwrecks.com/node/5061
+      sub-Q.com is password-protected while it's in beta (until January 2015.)
+      Please kick the tires and report any issues with the website
+      via the sub-Q.com Contact form.
 
-  
+
+This program based on:
+Twine: HTML5 sound macros by Leon Arnott of Glorious Trainwrecks
+the source and influence of which appear under a Creative Commons CC0 1.0 Universal License
+
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -26,32 +31,6 @@ This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-       Download/Documentation
-         https://github.com/AteYourLembas/sqTwineSound
-
-       FAQ / Q & A (password: ThinkVast)
-         http://sub-q.com/questions
-
-       Feature Requests (password: ThinkVast)
-         http://sub-q.com/forums/forum/feature-requests/
-
-      sub-Q.com is password-protected while it's in beta (through 2014.)
-      Please kick the tires and report any issues via the sub-Q.com Contact form.
-
-
- This suite contains the following macros
-
-     updatevolume, playsound, playsounds
-     pausesound, pauseallsound
-     stopsound, stopallsound
-     loopsound, unloopsound
-     fadeinsound, fadeinsounds, fadeoutsound, fadeoutsounds
-     quieter, louder
-     jumpscare <-- PLEASE GIVE YOUR READER A STARTLE WARNING BEFORE USING JUMPSCARE!
 
 */
 
@@ -68,6 +47,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     var soundInterval = 0.1; // Creates an interval of 1/10 creates ten stages of loudness. Used by quieter/louder. Feel free to tweak
     var fileExtensions = ["ogg", "mp3", "wav", "webm"]; // Acceptable file extensions for audio
     var clips = {};
+
+    // Convenience vars
+    var clipNameLabel = "Clip Name";
+    var overlapLabel = "Overlap";
+    var volumeProportionLabel = "Volume Proportion";
+    var loopLabel = "Loop?";
 
 
     //------------- pausableTimeout ---------
@@ -309,7 +294,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this.stopAndClear = function() {
           var activeAudioObj = this._getActiveAudio();
           activeAudioObj.pause();
-          if (activeAudioObj.currentTime) activeAudioObj.currentTime = 0;
+          if (activeAudioObj.currentTime > 0) activeAudioObj.currentTime = 0;
           if (this.crossfadeTimeout !== undefined) { this.crossfadeTimeout.stopAndClear(); delete this.crossfadeTimeout; }
         };
 
@@ -391,8 +376,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     // Given the clipName, get the active soundtrack
     //
     function getSoundTrack(clipName) {
-        clipName = clipName.toString();
-        clipName = clipName.lastIndexOf(".") > -1 ? clipName.slice(0, clipName.lastIndexOf(".")) : clipName;
+        clipName = cleanClipName(clipName.toString());
+        if (!clips.hasOwnProperty(clipName)) { this.error("Given clipName " + clipName + " does not exist in this project. Please check your variable names."); }
         return clips[clipName];
     }
 
@@ -410,13 +395,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         for (var index in loopNames) {
           if (loopNames.hasOwnProperty(index)) {
               var loopName = loopNames[index];
-              loopName = loopName.lastIndexOf(".") > -1 ? loopName.slice(0, loopName.lastIndexOf(".")) : loopName;
+              loopName = cleanClipName(loopName);
 
-              if (volumeProportion !== undefined) this.getSoundTrack(loopName).updateVolumeProportion(volumeProportion);
-              if (overlap !== undefined) this.getSoundTrack(loopName).overlap = overlap;
+              if (volumeProportion !== undefined) getSoundTrack(loopName).updateVolumeProportion(volumeProportion);
+              if (overlap !== undefined) getSoundTrack(loopName).overlap = overlap;
 
-              if (fadeIn) fadeSound(this.getSoundTrack(loopName));
-              else this.getSoundTrack(loopName).loop();
+              if (fadeIn) fadeSound(getSoundTrack(loopName));
+              else getSoundTrack(loopName).loop();
           }
         }
     }
@@ -449,20 +434,60 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     }
 
     // Common argument management
+    // Because of the total expected arguments (one string, one float, one int, one boolean)
+    // This method attempts to be forgiving of sequence. 
+    // Be advised if there were even one more argument, it probably couldn't be so forgiving anymore!
     //
-    function manageTripleArgs(func) {
-          if (func.args.length < 1) { return func.error("no audio clip name specified"); }    
-          if (func.args.length > 1) { 
-            if (typeof func.args[1] == "number") {
-              if (func.args[1] > 1.0 || func.args[1] < 0.0) { return func.error("Volume proportion (second argument) must be a decimal number no smaller than 0.0 and no bigger than 1.0"); }
-            } else { return func.error("Volume proportion (second argument) must be a decimal number (between 0.0 and 1.0)"); }
+    function manageCommonArgs(func, requiredArgs) {
+
+          // Look at the list of available arguments, clean them up, and take the first one of each desired type:
+          // Recreate the arguments as a list in required sequence [clipName, volumeProportion, overlap, loop]
+
+          var clipName;
+          var volumeProportion;
+          var overlap;
+          var loop;
+
+          for (var i = 0; i < func.args.length; i++) {
+            switch (typeof func.args[i]) {
+              case "string" :
+                if (clipName === undefined) clipName = func.args[i].toString();
+                break;
+              case "number" :
+                var tempNum = parseFloat(func.args[i]);
+                if (tempNum <= 1.0 && volumeProportion === undefined) volumeProportion = tempNum;
+                else if (overlap === undefined) overlap = tempNum; 
+                break;
+              case "boolean" :
+                if (loop === undefined) loop = func.args[i];
+                break;
+            }
           }
-          if (func.args.length > 2) { 
-            if (typeof func.args[2] !== "number") { return func.error("Fade duration (third argument) must be a number indicating milliseconds (defaults to 1000 ms aka 1 second)"); }
-          } 
-          if (func.args.length > 3) { 
-            if (typeof func.args[3] !== "boolean") { return func.error("Whether to loop (fourth argument) must be a boolean (true or false)"); }
-          } 
+
+          for (var requiredArg in requiredArgs) {
+            switch (requiredArg) {
+              case clipNameLabel :
+                if (clipName === undefined) { return this.error("No audio clip name specified."); } 
+                break;
+              case volumeProportionLabel :
+                if (volumeProportion === undefined || volumeProportion > 1.0 || volumeProportion < 0.0) { return this.error("No volume proportion specified (must be a decimal number no smaller than 0.0 and no bigger than 1.0.)"); }
+                break;
+              case overlapLabel :
+                if (overlap === undefined) { return this.error("No fade duration specified (must be a number in milliseconds greater than 1.)"); }
+                break;
+              case loopLabel :
+                if (loop === undefined) { return this.error("No loop flag provided (must be a boolean, aka true or false.)"); }
+                break;
+            }
+          }
+
+          return [clipName, volumeProportion, overlap, loop];
+    }
+
+    // Get the clipName up to the . if a . exists, otherwise do no harm
+    //
+    function cleanClipName(clipName) {
+      return clipName.lastIndexOf(".") > -1 ? clipName.slice(0, clipName.lastIndexOf(".")) : clipName;
     }
 
 
@@ -480,106 +505,92 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
 
     /* <<updatevolume $backgroundMusic 0.5>>
-    /
-    / Given a decimal between 0.0 and 1.0, 
-    / updates the clip's volume proportion and the clip's actual volume
-    /
+    
+     Given a decimal between 0.0 and 1.0, 
+     updates the clip's volume proportion and the clip's actual volume
+    
     */
     macros.add("updatevolume", {
         handler: function () {
           
-          if (this.args.length < 2) {
-            var errors = [];
-            if (this.args.length < 1) { errors.push("audio clip name"); }
-            if (this.args.length < 2) { errors.push("volume proportion"); }
-            return this.error("no " + errors.join(" or ") + " specified");
-          }
-          if (typeof this.args[1] == "number") {
-            if (this.args[1] > 1.0 || this.args[1] < 0.0) { return this.error("Volume proportion (second argument) must be a decimal number no smaller than 0.0 and no bigger than 1.0"); }
-          } else { return this.error("Volume proportion (second argument) must be a decimal number (between 0.0 and 1.0)"); }
-          
-          var loopName = this.args[0].toString();
-          var volumeProportion = parseFloat(this.args[1]);
-          var clipName = loopName.lastIndexOf(".") > -1 ? loopName.slice(0, loopName.lastIndexOf(".")) : loopName;
-
-          clips[clipName].updateVolumeProportion(volumeProportion);
+          var args = manageCommonArgs(this, [clipNameLabel, volumeProportionLabel])
+          var soundtrack = getSoundTrack(this.args[0]);
+          soundtrack.updateVolumeProportion(args[1]);
         }
     });
 
     /**
-     * <<playsound "meow.mp3">> OR <<playsound "meow" 0.8>> OR <<playsound $meow 0.8 true>> OR <<playsound $meow 0.8 true 200>>
-     *
-     *  This version of the macro lets you do a little bit of sound mixing.
-     *
-     *  This macro requires a sound clip name
-     *
-     *  In addition, you may give it (in this order, please)
-     *
-     *  OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
-     *  OPTIONAL: number of milliseconds to overlap/crossfade the loop (1000 ms aka 1 sec by default)
-     *  OPTIONAL: true if you'd like to loop, false if no
-     *
-     #  So this plays a clip normally, at full global volume
-     *
-     *      <<playsound $walla">>
-     *
-     *  OR this fades in a quiet background $walla that will loop and crossfade with 2000 ms (2 seconds) of overlap:
-     *
-     *      <<playsound $walla 0.2 2000 true>>
-     *
-     *  And this plays a louder $meow on top:
-     *
-     *      <<playsound $meow 1.0>>
-     *
-     *
+      <<playsound "meow.mp3">> OR <<playsound "meow" 0.8>> OR <<playsound $meow 0.8 true>> OR <<playsound $meow 0.8 true 200>>
+     
+       This version of the macro lets you do a little bit of sound mixing.
+     
+       Parameters:
+
+           REQUIRED: clipName (e.g. "backgroundMusic.mp3" or $backgroundMusic)     
+           OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
+           OPTIONAL: number of milliseconds to overlap/crossfade the loop (0 ms by default)
+           OPTIONAL: true if you'd like to loop, false if no
+     
+       So this plays a clip normally, at full global volume
+     
+           <<playsound $walla">>
+     
+       OR this fades in a quiet background $walla that will loop and crossfade with 2000 ms (2 seconds) of overlap:
+     
+           <<playsound $walla 0.2 2000 true>>
+     
+       And this plays a louder $meow on top:
+     
+           <<playsound $meow 1.0>>
+     
+     
      */
     macros.add("playsound", {
       handler : function () {
 
-          manageTripleArgs(this);
+          var args = manageCommonArgs(this, [clipNameLabel]);
 
           var soundtrack = getSoundTrack(this.args[0]);
-          var volumeProportion = this.args.length > 1 ? this.args[1] : soundtrack.volumeProportion;
-          var loop = this.args.length > 3 ? this.args[3] : false;
-          soundtrack.overlap = this.args.length > 2 ? parseInt(this.args[2]) : 0;
+          var volumeProportion = args[1] !== undefined ? args[1] : soundtrack.volumeProportion;
+          soundtrack.overlap = args[2] !== undefined ? args[2] : 0;
+          var loop = args[3] !== undefined ? args[3] : false;
           soundtrack.updateVolumeProportion(volumeProportion);
           soundtrack.play(loop); 
         }
     });
 
 
-    /* <<playsounds ["moodMusic.mp3", "footsteps.mp3"]>>
-    /  OR IDEALLY
-    /  <<set $spookySounds = [$moodMusic, $footSteps]>>
-    /  <<playsounds $spookySounds>>
-    /
-    / Play multiple sounds at once (picking up where we left off)
-     *
-     *  This macro requires a sound clip name
-     *
-     *  In addition, you may give it (in this order, please)
-     *
-     *  OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
-     *  OPTIONAL: number of milliseconds to fade (0 ms by default)
-     *  OPTIONAL: true if you'd like to loop, false if no
-     *    
+    /* <<set $spookySounds = [$moodMusic, $footSteps]>>
+      <<playsounds $spookySounds 0.5 true>>
+    
+      Play multiple sounds at once (picking up where we left off)
+      If you give it no sounds to play, it quietly ignores the command.
+
+      Parameters:
+
+          OPTIONAL: clipName (e.g. "backgroundMusic.mp3" or $backgroundMusic)
+          OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
+          OPTIONAL: number of milliseconds to overlap/crossfade (0 ms by default)
+          OPTIONAL: true if you'd like to loop, false if no
+         
     /
     */
     macros.add("playsounds", {
         handler: function () {
 
-          manageTripleArgs(this);
+          var clipNameString = this.args[0].toString();
+          if (clipNameString == "[]") return;
+          var clipNames = clipNameString.split(",");
+          if (clipNames.length < 1)  return;
 
-          var clipNames = this.args[0].toString().split(",");
-          for (var index in clipNames) {
-            if (clipNames.hasOwnProperty(index)) {
-                var soundtrack = getSoundTrack(clipNames[index]);
-                var volumeProportion = this.args.length > 1 ? this.args[1] : soundtrack.volumeProportion;
-                var loop = this.args.length > 3 ? this.args[3] : false;
-                soundtrack.overlap = this.args.length > 2 ? parseInt(this.args[2]) : 0;
+          var args = manageCommonArgs(this);
+          for (var index = 0; index < clipNames.length; index++) {
+                var soundtrack = getSoundTrack(cleanClipName(clipNames[index]));
+                var volumeProportion = args[1] !== undefined ? args[1] : soundtrack.volumeProportion;
+                soundtrack.overlap = args[2] !== undefined ? args[2] : 0;
+                var loop = args[3] !== undefined ? args[3] : false;
                 soundtrack.updateVolumeProportion(volumeProportion);
                 soundtrack.play(loop); 
-            }
           }
         }
     });
@@ -587,24 +598,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
     /* <<pausesound "backgroundMusic.ogg">> 
-    /
-    /  Pauses "backgroundMusic.ogg" at its current location. 
-    /  Use <<playsound "trees.ogg" >> to resume it.
+    
+     Pauses "backgroundMusic.ogg" at its current location. 
+     Use <<playsound "trees.ogg" >> to resume it.
+
+     Parameters:
+
+         REQUIRED: clipName (e.g. "backgroundMusic.mp3" or $backgroundMusic)
+
     */  
     macros.add("pausesound", {
       handler: function() {
-        if (this.args.length < 1) { return this.error("no audio clip name specified"); }                  
+        var args = manageCommonArgs(this, [clipNameLabel]);                 
         getSoundTrack(this.args[0]).pause();
       }
     });
 
 
     /* <<pauseallsound>> 
-    /
-    /  Pauses all sounds at their current location. 
-    /
-    /  If you'd like the option to start multiple sounds,
-    /  take a look at the "fadeinsounds" macro
+    
+      Pauses all sounds at their current location. 
+    
+      If you'd like the option to start multiple sounds,
+      take a look at <<playsounds>> and <<fadeinsounds>>
     */ 
     macros.add("pauseallsound", {
       handler: function () {
@@ -617,25 +633,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     });
 
     /* <<stopsound $backgroundMusic>>
-    / 
-    /  Stop the given sound immediately
-    /  If the sound is played again, it will play from the beginning
+     
+      Stop the given sound immediately
+      If the sound is played again, it will play from the beginning
+  
+      Parameters:
+
+          REQUIRED: clipName (e.g. "backgroundMusic.mp3" or $backgroundMusic)
     */    
     macros.add("stopsound", {
       handler: function() {
-        if (this.args.length < 1) { return this.error("no audio clip name specified"); }                          
+        var args = manageCommonArgs(this, [clipNameLabel]);                        
         getSoundTrack(this.args[0]).stopAndClear();
       }
     });
 
 
     /* <<stopallsound>>
-    / 
-    /  Stops all sounds immediately.
-    /  If any stopped sound is played again, it will play from the beginning
-    /
-    /  If you'd like the option to start multiple sounds,
-    /  take a look at the "fadeinsounds" macro
+     
+      Stops all sounds immediately.
+      If any stopped sound is played again, it will play from the beginning
+    
+      If you'd like the option to start multiple sounds,
+      take a look at <<playsounds>> and <<fadeinsounds>>
     */ 
     macros.add("stopallsound", {
         handler: function () {
@@ -648,24 +668,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     });
 
     /* <<loopsound "backgroundMusic.mp3">>
-    /  
-    /  Starts playing the given clip on repeat.
-    /  Note that browsers will not necessarily play looping audio seamlessly.
-    /  For seamless audio, use a fade duration/overlap (third parameter) greater than zero
-    /
-     *  This macro requires a sound clip name
-     *    
-     *  OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
-     *  OPTIONAL: number of milliseconds to overlap/crossfade the loop (0 by default)
+      
+      Starts playing the given clip on repeat.
+      Note that browsers will not necessarily play looping audio seamlessly.
+      For seamless audio, use a fade duration/overlap (third parameter) greater than 1 millisecond
+      (Well, you probably want something more perceptibe than 1 millisecond!)
+        
+      Parameters:
+
+       REQUIRED: clipName (e.g. "backgroundMusic.mp3" or $backgroundMusic)     
+       OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
+       OPTIONAL: number of milliseconds to overlap/crossfade the loop (0 ms by default)
     */    
     macros.add("loopsound", {
         handler: function () {
           
-          manageTripleArgs(this);
+          var args = manageCommonArgs(this, [clipNameLabel]);
 
           var soundtrack = getSoundTrack(this.args[0]);
-          var volumeProportion = this.args.length > 1 ? this.args[1] : soundtrack.volumeProportion;
-          soundtrack.overlap = this.args.length > 2 ? parseInt(this.args[2]) : 0;
+          var volumeProportion = args[1] !== undefined ? args[1] : soundtrack.volumeProportion;
+          soundtrack.overlap = args[2] !== undefined ? args[2] : 0;
           soundtrack.updateVolumeProportion(volumeProportion);
           soundtrack.loop();
        }
@@ -673,99 +695,116 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
     /* <<unloopsound $heartbeat>>
-    /
-    /  Let the given sound stop when it finishes its current loop
-    /  (so the sound no longer repeats.)
+    
+      Let the given sound stop when it finishes its current loop
+      (so the sound no longer repeats.)
+
+      Parameters:
+
+          REQUIRED: clipName (e.g. "backgroundMusic.mp3" or $backgroundMusic)     
+
     */ 
     macros.add("unloopsound", {
         handler: function () {
-          if (this.args.length < 1) { return this.error("no audio clip name specified"); }          
+          var args = manageCommonArgs(this, [clipNameLabel]);         
           getSoundTrack(this.args[0]).looping = false;
        }
     });
 
 
     /* <<fadeinsound "heartbeat.mp3">>
-    /
-    / Identical to loopsound, but fades in the sound over 2 seconds.
-    /
-     *  This macro requires a sound clip name
-     *    
-     *  OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
-     *  OPTIONAL: number of milliseconds to overlap/crossfade the loop (1000 ms aka 1 sec by default)
-    /
+    
+      Identical to loopsound, but fades in the sound over 2 seconds.
+
+      Parameters:
+
+          REQUIRED: clipName (e.g. "backgroundMusic.mp3" or $backgroundMusic)     
+          OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
+          OPTIONAL: number of milliseconds to overlap/crossfade the loop (defaults to clip's last set overlap)
+
     */
     macros.add("fadeinsound", {
         handler: function () {
 
-          manageTripleArgs(this);
+          var args = manageCommonArgs(this, [clipNameLabel]);
         
           var soundtrack = getSoundTrack(this.args[0]);
-          var volumeProportion = this.args.length > 1 ? this.args[1] : soundtrack.volumeProportion; 
-          soundtrack.overlap = this.args.length > 2 ? parseInt(this.args[2]) : soundtrack.overlap;
+          var volumeProportion = args[1] !== undefined ? args[1] : soundtrack.volumeProportion; 
+          soundtrack.overlap = args[2] !== undefined ? args[2] : soundtrack.overlap;
           soundtrack.updateVolumeProportion(volumeProportion);
           soundtrack.fadeSound(true);
         }
     });
 
     /* <<fadeinsounds ["moodMusic.mp3", "footsteps.mp3"]>>
-    /  OR IDEALLY
-    /  <<set $spookySounds = [$moodMusic, $footSteps]>>
-    /  <<fadeinsounds $spookySounds>>
-    /
-    / Fade in multiple sounds at once.
-    /
-     *  This macro requires a sound clip name
-     *    
-     *  OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
-     *  OPTIONAL: number of milliseconds to overlap/crossfade the loop (1000 ms aka 1 sec by default)
-    /
+
+        Fade in multiple sounds at once.
+    
+      Parameters:
+
+          REQUIRED: clipNames as list (e.g. [$backgroundMusic, $footsteps])     
+          OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
+          OPTIONAL: number of milliseconds to overlap/crossfade the loop (defaults to clip's last set overlap)
+    
     */
     macros.add("fadeinsounds", {
         handler: function () {
 
-          manageTripleArgs(this);
+          var args = manageCommonArgs(this, [clipNameLabel]);
 
-          var volumeProportion = this.args.length > 1 ? this.args[1] : undefined; 
-          var overlap = this.args.length > 2 ? parseInt(this.args[2]) : undefined;
+          var volumeProportion = args[1] !== undefined ? args[1] : undefined;
+          var overlap = args[2] !== undefined ? args[2] : undefined;
           loopSounds(this.args[0].toString(), true, volumeProportion, overlap);
         }
     });
 
     /* <<fadeoutsound $birdsong>>
-    /
-    / Identical to stopsound, but fades out the sound over the stored fade duration (overlap).
-    /
+    
+      Identical to stopsound, but fades out the sound over the stored fade duration (overlap).
+    
+      Parameters:
+
+          REQUIRED: clipName (e.g. "backgroundMusic.mp3" or $backgroundMusic)
+
     */
     macros.add("fadeoutsound", {
         handler: function () {
-          if (this.args.length < 1) { return this.error("no audio clip name specified"); }          
+          var args = manageCommonArgs(this, [clipNameLabel]);         
           fadeSound(this.args[0].toString(), false);
         }
     });
 
 
-    /* <<fadeoutsounds ["moodMusic.mp3", "footsteps.mp3"]>>
-    /  OR IDEALLY
-    /  <<set $spookySounds = [$moodMusic, $footSteps]>>
-    /  <<fadeoutsounds $spookySounds>>
-    /
-    / Fade out multiple sounds at once.
-    /
+    /* <<fadeoutsounds [$moodMusic, $footsteps]>>
+    
+      Fade out multiple sounds at once.
+      If you give it no sounds to play, it quietly ignores the command.
+
+      Parameters:
+
+          REQUIRED: clipNames as list (e.g. [$backgroundMusic, $footsteps])     
+    
     */
     macros.add("fadeoutsounds", {
         handler: function () {
-          if (this.args.length < 1) { return this.error("no audio clip name specified"); }          
-          loopSounds(this.args[0].toString(), false);
+
+          var clipNameString = this.args[0].toString();
+          if (clipNameString == "[]") return;
+          var clipNames = clipNameString.split(",");
+          if (clipNames.length < 1)  return;
+
+          for (var index = 0; index < clipNames.length; index++) {
+            fadeSound(cleanClipName(clipNames[index]), false);
+          }
         }
     });
 
 
     /* <<quieter>>
-    /
-    / Reduces the story's globalVolume by 1/10th of the reader's system volume.
-    / Thus creates a 10-unit volume range for the story
-    /
+    
+     Reduces the story's globalVolume by 1/10th of the reader's system volume.
+     Thus creates a 10-unit volume range for the story
+    
     */
     macros.add("quieter", {
         handler: function () {
@@ -774,10 +813,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     });
 
     /* <<louder>>
-    /
-    / Increases the story's globalVolume by 1/10th of the reader's system volume.
-    / Thus creates a 10-unit volume range for the story
-    /
+    
+     Increases the story's globalVolume by 1/10th of the reader's system volume.
+     Thus creates a 10-unit volume range for the story
+    
     */
     macros.add("louder", {
         handler: function () {
@@ -787,15 +826,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
     /* <<jumpscare "scream.mp3">>
-    /
-    / Play the clip at maximum story volume
-    / Don't affect any stored volume options
-    / PLEASE GIVE THE READER A STARTLE WARNING BEFORE USING THIS.
-    /
+    
+     Play the clip at maximum story volume
+     Don't affect any stored volume options
+     PLEASE GIVE THE READER A STARTLE WARNING BEFORE USING THIS.
+    
     */
     macros.add("jumpscare", {
       handler: function () {
-
+          var args = manageCommonArgs(this, [clipNameLabel]);
           var soundtrack = getSoundTrack(this.args[0]);
           soundtrack.updateVolumeProportion(1.0);
           soundtrack.play();
