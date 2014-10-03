@@ -206,8 +206,8 @@ GNU General Public License for more details.
           // And fade in our partner
           //
           nextAudioObj.currentTime = 0;
-          nextAudioObj.volume = globalVolume * sqAudioObj.volumeProportion;
-          nextAudioObj.play();       
+          nextAudioObj.volume = 0;          
+          nextAudioObj.play();
           sqAudioObj.__fadeSound(nextAudioObj, true);
 
           // Kick off the next timer to crossfade
