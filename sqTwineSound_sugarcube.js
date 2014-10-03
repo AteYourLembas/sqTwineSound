@@ -203,7 +203,6 @@ GNU General Public License for more details.
         //
         this.__fadeSound = function(audioObj, fadeIn) {
 
-          var maxVolume = globalVolume * this.volumeProportion;
           var startVolume = fadeIn ? 0 : globalVolume * this.volumeProportion;
           var deltaVolume = globalVolume * this.volumeProportion * (fadeIn ? 1 : -1);
 
