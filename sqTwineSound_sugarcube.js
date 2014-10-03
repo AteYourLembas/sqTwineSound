@@ -23,7 +23,7 @@ Twine: HTML5 sound macros by Leon Arnott of Glorious Trainwrecks
 the source and influence of which appear under a Creative Commons CC0 1.0 Universal License
 
 This program uses
- * easeInOutQuad()
+ * easeInCubic(), easeOutCubic()
  * Copyright © 2001 Robert Penner
  * All rights reserved.
  *
@@ -92,12 +92,8 @@ GNU General Public License for more details.
     //------------ Robert Penner via Kirupa math methods ----------
     //-------------------------------------------------------------
 
-    function easeInCubic(currentIteration, startValue, changeInValue, totalIterations) {
-        return changeInValue * Math.pow(currentIteration / totalIterations, 3) + startValue;
-    } 
-
-    function easeOutCubic(currentIteration, startValue, changeInValue, totalIterations) {
-        return changeInValue * (Math.pow(currentIteration / totalIterations - 1, 3) + 1) + startValue;
+    function easeInOutSine(currentIteration, startValue, changeInValue, totalIterations) {
+        return changeInValue / 2 * (1 - Math.cos(Math.PI * currentIteration / totalIterations)) + startValue;
     }
 
 
@@ -203,13 +199,9 @@ GNU General Public License for more details.
 
 
         // Perform fade on specified audio
+        // Use ease
         //
         this.__fadeSound = function(audioObj, fadeIn) {
-
-          // DELETE ME
-          //fadeIn = false;
-          //audioObj.volume = globalVolume * this.volumeProportion;
-          // END DELETE BLOCK
 
           var maxVolume = globalVolume * this.volumeProportion;
           var startVolume = fadeIn ? 0 : globalVolume * this.volumeProportion;
@@ -217,23 +209,15 @@ GNU General Public License for more details.
 
           //alert("__fadeSound! fadeIn " + fadeIn + ", globalVolume " + globalVolume + ", volProp " + this.volumeProportion + " startVol " + startVolume + " deltaVolume " + deltaVolume);
 
-
           // Handy vars for easing
           var totalIterations = this.overlap/updateInterval;
           var currentIteration = 1;
 
           audioObj.interval = setInterval(function() {
 
-              // If you ever want to start/end at a volume other than zero, change goalVolume in the line below to be abs(goalVolume-startVolume) or some such
-              //
-              //tempVolume = Math.min(goalVolume, Math.max(0, tempVolume + increment));
-
               //Use easing to prevent sound popping in or out
               //
-              //                easeInCubic(currentIteration, startValue, changeInValue, totalIterations) 
-              var desiredVolume = fadeIn? easeInCubic(currentIteration, startVolume, deltaVolume, totalIterations) : easeOutCubic(currentIteration, startVolume, deltaVolume, totalIterations) ;
-              //desiredVolume = Math.min(maxVolume, Math.max(0, desiredVolume)); // No more than goal, no less than zero
-              //alert("desVol is " + desiredVolume + " because currentIter " + currentIteration + " and startVolume " + startVolume + ", deltaVolume " + deltaVolume + ", totalIterations " + totalIterations + " and bTW quittin' vol is " + (startVolume + deltaVolume));
+              var desiredVolume = easeInOutSine(currentIteration, startVolume, deltaVolume, totalIterations);
               audioObj.volume = desiredVolume;
               currentIteration += 1;
             
@@ -247,7 +231,6 @@ GNU General Public License for more details.
               if (audioObj.volume === 0) {
                   audioObj.pause();
                   audioObj.currentTime = 0;
-                  //audioObj.volume = goalVolume;
               }
           }, updateInterval);
         };
