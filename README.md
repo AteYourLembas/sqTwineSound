@@ -79,7 +79,7 @@ SUITE CONTENTS
      pauseallsound   
      stopsound       clipName
      stopallsound    
-     oopsound        clipName, *volumeProportion, *overlap
+     loopsound        clipName, *volumeProportion, *overlap
      unloopsound     clipName
      fadeinsound     clipName
      fadeinsounds    [clipName1, clipName2, ...], *volumeProportion, *overlap
