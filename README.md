@@ -4,16 +4,16 @@ sqTwineSound
            sqTwineSound HTML5 Sound Macro Suite
            Copyright 2014 Tory Hoke
 
-                 Program URI: http://www.sub-q.com/plugins/sqTwineSound/
-                 Description: Sound macros for Twine creations, including controls for volume, fade interval, and playing multiple tracks at once.
-                     Version: 0.8.0
-                      Author: Tory Hoke
-                  Author URI: http://www.toryhoke.com
-                     License: GNU General Public License
-                 License URI: http://www.opensource.org/licenses/gpl-license.php
-                  Repository: https://github.com/AteYourLembas/sqTwineSound
-                 FAQ / Q & A: http://sub-q.com/questions (password: ThinkVast)
-Bug Reports/Feature Requests: http://sub-q.com/forums/topic/what-would-you-like-to-see-sqtwinesound-do-that-its-not-doing/ (password: ThinkVast)
+                     Program URI: http://www.sub-q.com/plugins/sqTwineSound/
+                     Description: Sound macros for Twine creations, including controls for volume, fade interval, and playing multiple tracks at once.
+                         Version: 0.8.0
+                          Author: Tory Hoke
+                      Author URI: http://www.toryhoke.com
+                         License: GNU General Public License
+                     License URI: http://www.opensource.org/licenses/gpl-license.php
+                      Repository: https://github.com/AteYourLembas/sqTwineSound
+                     FAQ / Q & A: http://sub-q.com/questions (password: ThinkVast)
+    Bug Reports/Feature Requests: http://sub-q.com/forums/topic/what-would-you-like-to-see-sqtwinesound-do-that-its-not-doing/ (password: ThinkVast)
 
       sub-Q.com is password-protected while it's in beta (until January 2015.)
       Please kick the tires and report any issues with the website

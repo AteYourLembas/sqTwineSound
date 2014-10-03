@@ -167,8 +167,8 @@ GNU General Public License for more details.
               tempVolume = Math.min(goalVolume, Math.max(0, tempVolume + increment));
 
               //Easing (increment, startpoint, endpoint) chooses the next friendly value between the given min and max; prevents sound popping in or out
-              //
-              audioObj.volume = Math.easeInOut(tempVolume, 0, goalVolume); 
+              // was Math.easeInOut(tempVolume, 0, goalVolume)
+              audioObj.volume = (!fadeIn) ? Math.easeInOut(tempVolume, 0, goalVolume) : Math.easeInOut(tempVolume, goalVolume, 0);
             
               if (tempVolume === 0 || tempVolume === goalVolume) clearInterval(audioObj.interval);
 
