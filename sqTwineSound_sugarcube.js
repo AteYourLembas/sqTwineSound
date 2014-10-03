@@ -23,7 +23,7 @@ Twine: HTML5 sound macros by Leon Arnott of Glorious Trainwrecks
 the source and influence of which appear under a Creative Commons CC0 1.0 Universal License
 
 This program uses
- * easeInCubic(), easeOutCubic()
+ * easeInOutSine()
  * Copyright © 2001 Robert Penner
  * All rights reserved.
  *
