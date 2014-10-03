@@ -254,9 +254,8 @@ GNU General Public License for more details.
 
         // Update volume proportion and volume of both audio clips
         //
-        this.updateVolumeProportion = function(volumeProportion) {
+        this.setVolumeProportion = function(volumeProportion) {
             this.volumeProportion = volumeProportion;
-            this.updateVolume();
         };
 
         // Update volume of both audio clips (assumes vol proportion and global vol already set)
@@ -276,7 +275,6 @@ GNU General Public License for more details.
 
             var activeAudioObj = this._getActiveAudio();
             if (activeAudioObj) {  
-                this.updateVolume();
                 activeAudioObj.play();
               }
           }
@@ -285,8 +283,8 @@ GNU General Public License for more details.
         // Pause whatever audio is currently playing and pause the timer, too
         //
         this.pause = function() {
-          this._getActiveAudio().pause();
           if (this.crossfadeTimeout !== undefined) this.crossfadeTimeout.deactivate();
+          this._getActiveAudio().pause();
         };
 
         // Stop whatever audio is currently playing and dump the timer
@@ -397,11 +395,15 @@ GNU General Public License for more details.
               var loopName = loopNames[index];
               loopName = cleanClipName(loopName);
 
-              if (volumeProportion !== undefined) getSoundTrack(loopName).updateVolumeProportion(volumeProportion);
+              if (volumeProportion !== undefined) getSoundTrack(loopName).setVolumeProportion(volumeProportion);
               if (overlap !== undefined) getSoundTrack(loopName).overlap = overlap;
 
               if (fadeIn) fadeSound(getSoundTrack(loopName));
-              else getSoundTrack(loopName).loop();
+              else { 
+                var soundtrack = getSoundTrack(loopName);
+                soundtrack.updateVolume();
+                soundtrack.loop();
+              }
           }
         }
     }
@@ -465,19 +467,21 @@ GNU General Public License for more details.
           }
 
           for (var requiredArg in requiredArgs) {
-            switch (requiredArg) {
-              case clipNameLabel :
-                if (clipName === undefined) { return this.error("No audio clip name specified."); } 
-                break;
-              case volumeProportionLabel :
-                if (volumeProportion === undefined || volumeProportion > 1.0 || volumeProportion < 0.0) { return this.error("No volume proportion specified (must be a decimal number no smaller than 0.0 and no bigger than 1.0.)"); }
-                break;
-              case overlapLabel :
-                if (overlap === undefined) { return this.error("No fade duration specified (must be a number in milliseconds greater than 1.)"); }
-                break;
-              case loopLabel :
-                if (loop === undefined) { return this.error("No loop flag provided (must be a boolean, aka true or false.)"); }
-                break;
+            if (requiredArgs.hasOwnProperty(requiredArg)) {
+              switch (requiredArg) {
+                case clipNameLabel :
+                  if (clipName === undefined) { return this.error("No audio clip name specified."); } 
+                  break;
+                case volumeProportionLabel :
+                  if (volumeProportion === undefined || volumeProportion > 1.0 || volumeProportion < 0.0) { return this.error("No volume proportion specified (must be a decimal number no smaller than 0.0 and no bigger than 1.0.)"); }
+                  break;
+                case overlapLabel :
+                  if (overlap === undefined) { return this.error("No fade duration specified (must be a number in milliseconds greater than 1.)"); }
+                  break;
+                case loopLabel :
+                  if (loop === undefined) { return this.error("No loop flag provided (must be a boolean, aka true or false.)"); }
+                  break;
+              }
             }
           }
 
@@ -513,9 +517,10 @@ GNU General Public License for more details.
     macros.add("updatevolume", {
         handler: function () {
           
-          var args = manageCommonArgs(this, [clipNameLabel, volumeProportionLabel])
+          var args = manageCommonArgs(this, [clipNameLabel, volumeProportionLabel]);
           var soundtrack = getSoundTrack(this.args[0]);
-          soundtrack.updateVolumeProportion(args[1]);
+          soundtrack.setVolumeProportion(args[1]);
+          soundtrack.updateVolume();
         }
     });
 
@@ -554,7 +559,8 @@ GNU General Public License for more details.
           var volumeProportion = args[1] !== undefined ? args[1] : soundtrack.volumeProportion;
           soundtrack.overlap = args[2] !== undefined ? args[2] : 0;
           var loop = args[3] !== undefined ? args[3] : false;
-          soundtrack.updateVolumeProportion(volumeProportion);
+          soundtrack.setVolumeProportion(volumeProportion);
+          soundtrack.updateVolume();
           soundtrack.play(loop); 
         }
     });
@@ -578,7 +584,9 @@ GNU General Public License for more details.
     macros.add("playsounds", {
         handler: function () {
 
-          var clipNameString = this.args[0].toString();
+          var clipNameString = this.args[0];
+          if (this.args[0] === undefined) return;
+          clipNameString = this.args[0].toString();
           if (clipNameString == "[]") return;
           var clipNames = clipNameString.split(",");
           if (clipNames.length < 1)  return;
@@ -589,7 +597,8 @@ GNU General Public License for more details.
                 var volumeProportion = args[1] !== undefined ? args[1] : soundtrack.volumeProportion;
                 soundtrack.overlap = args[2] !== undefined ? args[2] : 0;
                 var loop = args[3] !== undefined ? args[3] : false;
-                soundtrack.updateVolumeProportion(volumeProportion);
+                soundtrack.setVolumeProportion(volumeProportion);
+                soundtrack.updateVolume();
                 soundtrack.play(loop); 
           }
         }
@@ -688,7 +697,8 @@ GNU General Public License for more details.
           var soundtrack = getSoundTrack(this.args[0]);
           var volumeProportion = args[1] !== undefined ? args[1] : soundtrack.volumeProportion;
           soundtrack.overlap = args[2] !== undefined ? args[2] : 0;
-          soundtrack.updateVolumeProportion(volumeProportion);
+          soundtrack.setVolumeProportion(volumeProportion);
+          soundtrack.updateVolume();
           soundtrack.loop();
        }
     });
@@ -731,7 +741,7 @@ GNU General Public License for more details.
           var soundtrack = getSoundTrack(this.args[0]);
           var volumeProportion = args[1] !== undefined ? args[1] : soundtrack.volumeProportion; 
           soundtrack.overlap = args[2] !== undefined ? args[2] : soundtrack.overlap;
-          soundtrack.updateVolumeProportion(volumeProportion);
+          soundtrack.volumeProportion=volumeProportion;
           soundtrack.fadeSound(true);
         }
     });
@@ -788,7 +798,9 @@ GNU General Public License for more details.
     macros.add("fadeoutsounds", {
         handler: function () {
 
-          var clipNameString = this.args[0].toString();
+          var clipNameString = this.args[0];
+          if (this.args[0] === undefined) return;
+          clipNameString = this.args[0].toString();
           if (clipNameString == "[]") return;
           var clipNames = clipNameString.split(",");
           if (clipNames.length < 1)  return;
@@ -836,7 +848,8 @@ GNU General Public License for more details.
       handler: function () {
           var args = manageCommonArgs(this, [clipNameLabel]);
           var soundtrack = getSoundTrack(this.args[0]);
-          soundtrack.updateVolumeProportion(1.0);
+          soundtrack.setVolumeProportion(1.0);
+          soundtrack.updateVolume();
           soundtrack.play();
       }
     });
