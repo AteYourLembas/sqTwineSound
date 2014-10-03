@@ -22,6 +22,40 @@ This program based on:
 Twine: HTML5 sound macros by Leon Arnott of Glorious Trainwrecks
 the source and influence of which appear under a Creative Commons CC0 1.0 Universal License
 
+This program uses
+ * easeInOutQuad()
+ * Copyright © 2001 Robert Penner
+ * All rights reserved.
+ *
+ * As distributed by Kirupa
+ * http://www.kirupa.com/forum/showthread.php?378287-Robert-Penner-s-Easing-Equations-in-Pure-JS-(no-jQuery)
+ *
+ * Open source under the BSD License. 
+ * 
+ * 
+ * Redistribution and use in source and binary forms, with or without modification, 
+ * are permitted provided that the following conditions are met:
+ * 
+ * Redistributions of source code must retain the above copyright notice, this list of 
+ * conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright notice, this list 
+ * of conditions and the following disclaimer in the documentation and/or other materials 
+ * provided with the distribution.
+ * 
+ * Neither the name of the author nor the names of contributors may be used to endorse 
+ * or promote products derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY 
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
+ * OF THE POSSIBILITY OF SUCH DAMAGE. 
+
+
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -54,6 +88,21 @@ GNU General Public License for more details.
     var volumeProportionLabel = "Volume Proportion";
     var loopLabel = "Loop?";
 
+
+    //------------ Robert Penner via Kirupa math methods ----------
+    //-------------------------------------------------------------
+
+    function easeInCubic(currentIteration, startValue, changeInValue, totalIterations) {
+        return changeInValue * Math.pow(currentIteration / totalIterations, 3) + startValue;
+    } 
+
+    function easeOutCubic(currentIteration, startValue, changeInValue, totalIterations) {
+        return changeInValue * (Math.pow(currentIteration / totalIterations - 1, 3) + 1) + startValue;
+    }
+
+
+    //------------ End Math methods -------------------------------
+    //-------------------------------------------------------------
 
     //------------- pausableTimeout ---------
     //--------------------------------------
@@ -152,33 +201,53 @@ GNU General Public License for more details.
         };
 
 
+
         // Perform fade on specified audio
         //
         this.__fadeSound = function(audioObj, fadeIn) {
 
-          var goalVolume = globalVolume * this.volumeProportion;
-          var tempVolume = audioObj.volume;
-          var increment = ((goalVolume * updateInterval) / this.overlap) * (fadeIn ? 1 : -1);
+          // DELETE ME
+          //fadeIn = false;
+          //audioObj.volume = globalVolume * this.volumeProportion;
+          // END DELETE BLOCK
+
+          var maxVolume = globalVolume * this.volumeProportion;
+          var startVolume = fadeIn ? 0 : globalVolume * this.volumeProportion;
+          var deltaVolume = globalVolume * this.volumeProportion * (fadeIn ? 1 : -1);
+
+          //alert("__fadeSound! fadeIn " + fadeIn + ", globalVolume " + globalVolume + ", volProp " + this.volumeProportion + " startVol " + startVolume + " deltaVolume " + deltaVolume);
+
+
+          // Handy vars for easing
+          var totalIterations = this.overlap/updateInterval;
+          var currentIteration = 1;
 
           audioObj.interval = setInterval(function() {
 
               // If you ever want to start/end at a volume other than zero, change goalVolume in the line below to be abs(goalVolume-startVolume) or some such
               //
-              tempVolume = Math.min(goalVolume, Math.max(0, tempVolume + increment));
+              //tempVolume = Math.min(goalVolume, Math.max(0, tempVolume + increment));
 
-              //Easing (increment, startpoint, endpoint) chooses the next friendly value between the given min and max; prevents sound popping in or out
-              // was Math.easeInOut(tempVolume, 0, goalVolume)
-              audioObj.volume = (!fadeIn) ? Math.easeInOut(tempVolume, 0, goalVolume) : Math.easeInOut(tempVolume, goalVolume, 0);
+              //Use easing to prevent sound popping in or out
+              //
+              //                easeInCubic(currentIteration, startValue, changeInValue, totalIterations) 
+              var desiredVolume = fadeIn? easeInCubic(currentIteration, startVolume, deltaVolume, totalIterations) : easeOutCubic(currentIteration, startVolume, deltaVolume, totalIterations) ;
+              //desiredVolume = Math.min(maxVolume, Math.max(0, desiredVolume)); // No more than goal, no less than zero
+              //alert("desVol is " + desiredVolume + " because currentIter " + currentIteration + " and startVolume " + startVolume + ", deltaVolume " + deltaVolume + ", totalIterations " + totalIterations + " and bTW quittin' vol is " + (startVolume + deltaVolume));
+              audioObj.volume = desiredVolume;
+              currentIteration += 1;
             
-              if (tempVolume === 0 || tempVolume === goalVolume) clearInterval(audioObj.interval);
+              if (audioObj.volume === (startVolume + deltaVolume)) { 
+                //alert("Grats! You reached your destination of " + audioObj.volume); 
+                clearInterval(audioObj.interval); 
+              }
 
               //This effectively stops the loop and poises the volume to be played again
               //That way the clip isn't needlessly looping when no one can hear it.
-              if (tempVolume === 0) {
+              if (audioObj.volume === 0) {
                   audioObj.pause();
                   audioObj.currentTime = 0;
-                  // This is usually redundant, as playsound() adjusts the volume before playing, but better safe than sorry.
-                  audioObj.volume = goalVolume;
+                  //audioObj.volume = goalVolume;
               }
           }, updateInterval);
         };
@@ -199,24 +268,34 @@ GNU General Public License for more details.
           var nextAudioObj = sqAudioObj.alternate ? sqAudioObj.mainAudio : sqAudioObj.partnerAudio;
           sqAudioObj.alternate = !sqAudioObj.alternate;
 
-          // fade out current sound
-          //
-          sqAudioObj.__fadeSound(currAudioObj, false);
+          // Don't even bother with crossfade if there's no overlap
+          if (sqAudioObj.overlap !== undefined && sqAudioObj.overlap > 1) {
 
-          // And fade in our partner
-          //
-          nextAudioObj.currentTime = 0;
-          nextAudioObj.volume = 0;          
-          nextAudioObj.play();
-          sqAudioObj.__fadeSound(nextAudioObj, true);
+            // fade out current sound
+            //
+            sqAudioObj._fadeSound(currAudioObj, false);
+
+            // And fade in our partner
+            //
+            //nextAudioObj.volume = 0;          
+            //if (nextAudioObj.currentTime > 0) nextAudioObj.currentTime = 0;
+            //nextAudioObj.play();
+            sqAudioObj._fadeSound(nextAudioObj, true);
+
+          }
+          else {
+            sqAudioObj.updateVolume();          
+            nextAudioObj.currentTime = 0;
+            nextAudioObj.play();
+          }
 
           // Kick off the next timer to crossfade
           // Might as well garbage collect the old crossfadeTimeout, too.
           //
-          if (sqAudioObj.crossfadeTimeout !== undefined) { sqAudioObj.crossfadeTimeout.stopAndClear(); delete sqAudioObj.crossfadeTimeout; }
-          if (isNaN(sqAudioObj.getDuration())) { this.error("Can't loop because duration is not known (audio not loaded, probably not found.)"); return; }
-          sqAudioObj.crossfadeTimeout = new pausableTimeout(sqAudioObj._crossfadeLoop, [sqAudioObj, nextAudioObj]); 
-          sqAudioObj.crossfadeTimeout.activate(sqAudioObj.getDuration()*1000-sqAudioObj.overlap);
+          //if (sqAudioObj.crossfadeTimeout !== undefined) { sqAudioObj.crossfadeTimeout.stopAndClear(); delete sqAudioObj.crossfadeTimeout; }
+          //if (isNaN(sqAudioObj.getDuration())) { this.error("Can't loop because duration is not known (audio not loaded, probably not found.)"); return; }
+          //sqAudioObj.crossfadeTimeout = new pausableTimeout(sqAudioObj._crossfadeLoop, [sqAudioObj, nextAudioObj]); 
+          //sqAudioObj.crossfadeTimeout.activate(sqAudioObj.getDuration()*1000-sqAudioObj.overlap);
 
         };
 
@@ -247,7 +326,10 @@ GNU General Public License for more details.
         // Fade sound on whatever the active audio is
         //
         this.fadeSound = function(fadeIn) {
-            if (fadeIn) this.stopAndClear();
+            if (fadeIn) {
+              this.stopAndClear();
+              this.looping = true;
+            }
             else this.looping = false;
             this._fadeSound(this._getActiveAudio(), fadeIn);
         };
@@ -258,10 +340,10 @@ GNU General Public License for more details.
             this.volumeProportion = volumeProportion;
         };
 
-        // Update volume of both audio clips (assumes vol proportion and global vol already set)
+        // Update volume of active audio clips (assumes vol proportion and global vol already set)
         //
         this.updateVolume = function() {
-            this.mainAudio.volume = this.partnerAudio.volume = globalVolume * this.volumeProportion;
+            this._getActiveAudio().volume = globalVolume * this.volumeProportion;
         };
 
         // Play the current audio object and reactivate any paused timer
@@ -379,35 +461,6 @@ GNU General Public License for more details.
         return clips[clipName];
     }
 
-    
-    // Centralized function for fading multiple sounds
-    //
-    function loopSounds(loopNameString, fadeIn, volumeProportion, overlap) {
-
-        // loopNameString will be an object like "some.mp3,this.mp3"
-        // Convert to a string and break into pieces
-        // Don't bother converting to audio clip at this point--
-        // the call to fadeSound() will take care of that
-        //
-        var loopNames = loopNameString.split(",");
-        for (var index in loopNames) {
-          if (loopNames.hasOwnProperty(index)) {
-              var loopName = loopNames[index];
-              loopName = cleanClipName(loopName);
-
-              if (volumeProportion !== undefined) getSoundTrack(loopName).setVolumeProportion(volumeProportion);
-              if (overlap !== undefined) getSoundTrack(loopName).overlap = overlap;
-
-              if (fadeIn) fadeSound(getSoundTrack(loopName));
-              else { 
-                var soundtrack = getSoundTrack(loopName);
-                soundtrack.updateVolume();
-                soundtrack.loop();
-              }
-          }
-        }
-    }
-
 
     // Centralized function for sound fading
     //
@@ -427,7 +480,6 @@ GNU General Public License for more details.
         // Note soundInterval and minVolume are declared globally (at top of the script)
         var maxVolume = 1.0; // This is native to JavaScript. Changing will cause unexpected behavior
         globalVolume = Math.max(minVolume, Math.min(maxVolume, globalVolume + (soundInterval * direction)));
-
         for (var soundIndex in clips) {
             if (clips.hasOwnProperty(soundIndex)) {
                 clips[soundIndex].updateVolume();
@@ -457,8 +509,8 @@ GNU General Public License for more details.
                 break;
               case "number" :
                 var tempNum = parseFloat(func.args[i]);
-                if (tempNum <= 1.0 && volumeProportion === undefined) volumeProportion = tempNum;
-                else if (overlap === undefined) overlap = tempNum; 
+                if (volumeProportion === undefined && tempNum <= 1.0) volumeProportion = tempNum;
+                else if (overlap === undefined && tempNum >=updateInterval) overlap = tempNum; 
                 break;
               case "boolean" :
                 if (loop === undefined) loop = func.args[i];
@@ -476,7 +528,7 @@ GNU General Public License for more details.
                   if (volumeProportion === undefined || volumeProportion > 1.0 || volumeProportion < 0.0) { return this.error("No volume proportion specified (must be a decimal number no smaller than 0.0 and no bigger than 1.0.)"); }
                   break;
                 case overlapLabel :
-                  if (overlap === undefined) { return this.error("No fade duration specified (must be a number in milliseconds greater than 1.)"); }
+                  if (overlap === undefined) { return this.error("No fade duration specified (must be a number in milliseconds greater than + " + updateInterval + " ms.)"); }
                   break;
                 case loopLabel :
                   if (loop === undefined) { return this.error("No loop flag provided (must be a boolean, aka true or false.)"); }
@@ -635,7 +687,7 @@ GNU General Public License for more details.
       handler: function () {
         for (var clipName in clips) {
           if (clips.hasOwnProperty(clipName)) {
-            if (clips[clipName] !== undefined) clips[clipName].pause();
+            getSoundTrack(clipName).pause();
           }
         }
       }
@@ -760,11 +812,16 @@ GNU General Public License for more details.
     macros.add("fadeinsounds", {
         handler: function () {
 
-          var args = manageCommonArgs(this, [clipNameLabel]);
+          var clipNameString = this.args[0];
+          if (this.args[0] === undefined) return;
+          clipNameString = this.args[0].toString();
+          if (clipNameString == "[]") return;
+          var clipNames = clipNameString.split(",");
+          if (clipNames.length < 1)  return;
 
-          var volumeProportion = args[1] !== undefined ? args[1] : undefined;
-          var overlap = args[2] !== undefined ? args[2] : undefined;
-          loopSounds(this.args[0].toString(), true, volumeProportion, overlap);
+          for (var index = 0; index < clipNames.length; index++) {
+            fadeSound(cleanClipName(clipNames[index]), true);
+          }
         }
     });
 

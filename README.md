@@ -59,7 +59,7 @@ SUITE CONTENTS
 
 KNOWN ISSUES
 
-- If your story throws an alert, it will probably pause the sound playback. Note that whenever sound playback is paused by something other than another sqTwineSound macro, the timing of loops will be thrown off. One way to work around this is to manually pause sound in your passage (<<pausesound $backgroundMusic>>) before you throw up the alert, and then resume the sound <<playsound $backgroundMusic>>again after the alert.
+- If your story throws an alert, or whenever sound playback is paused by something other than another sqTwineSound macro, the start of the next loop will be delayed (by the amount of time the alert was visible.) One way to work around this is to manually pause sound in your passage (<<pausesound $backgroundMusic>>) before you throw up the alert, and then resume the sound <<playsound $backgroundMusic>>again after the alert.
 
 - When vigorously stopping and resuming multiple tracks, there is sometimes some skipping and unexpected behavior. Not sure why. Investigating.
 
