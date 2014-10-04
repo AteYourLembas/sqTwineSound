@@ -801,8 +801,14 @@ GNU General Public License for more details.
           var clipNames = clipNameString.split(",");
           if (clipNames.length < 1)  return;
 
+          var args = manageCommonArgs(this);
+
           for (var index = 0; index < clipNames.length; index++) {
-            fadeSound(cleanClipName(clipNames[index]), true);
+            var soundtrack = getSoundTrack(this.args[0]);
+            var volumeProportion = args[1] !== undefined ? args[1] : soundtrack.volumeProportion; 
+            soundtrack.overlap = args[2] !== undefined ? args[2] : soundtrack.overlap;
+            soundtrack.volumeProportion=volumeProportion;
+            soundtrack.fadeSound(true); 
           }
         }
     });
