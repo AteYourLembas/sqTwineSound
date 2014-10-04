@@ -619,12 +619,11 @@ GNU General Public License for more details.
         handler: function () {
 
           var clipNameString = this.args[0];
-          if (this.args[0] === undefined) return;
+          if (this.args[0] === undefined || this.args[0] == "") return;
           clipNameString = this.args[0].toString();
           if (clipNameString == "[]") return;
           var clipNames = clipNameString.split(",");
           if (clipNames.length < 1)  return;
-
           var args = manageCommonArgs(this);
           for (var index = 0; index < clipNames.length; index++) {
                 var soundtrack = getSoundTrack(cleanClipName(clipNames[index]));
@@ -795,7 +794,7 @@ GNU General Public License for more details.
         handler: function () {
 
           var clipNameString = this.args[0];
-          if (this.args[0] === undefined) return;
+          if (this.args[0] === undefined || this.args[0] == "") return;
           clipNameString = this.args[0].toString();
           if (clipNameString == "[]") return;
           var clipNames = clipNameString.split(",");
