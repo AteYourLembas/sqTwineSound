@@ -96,8 +96,6 @@ KNOWN ISSUES
 
 - If your story throws an alert, or whenever sound playback is paused by something other than another sqTwineSound macro, the start of the next loop will be delayed (by the amount of time the alert was visible.) One way to work around this is to manually pause sound in your passage (<<pausesound $backgroundMusic>>) before you throw up the alert, and then resume the sound <<playsound $backgroundMusic>>again after the alert.
 
-- When vigorously stopping and resuming multiple tracks, there is sometimes some skipping and unexpected behavior. Not sure why. Investigating.
-
 - As of Twine v 1.4.2, the Sugarcane and Jonah story formats don't seem to hand off variables to these custom macros. For example, if you're using Sugarcane or Jonah, please use <<playsound "music.mp3">> instead of playsound <<$music>>. Sugarcane and Jonah also don't have the neat <<button>> macro that the Sugarcube story format does, so making volume control buttons could be a bit of an adventure. I personally prefer the Sugarcube story format, but I'm not the boss of you.
 
 
