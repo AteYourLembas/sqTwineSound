@@ -328,6 +328,8 @@ GNU General Public License for more details.
         // Update volume of active audio clips (assumes vol proportion and global vol already set)
         //
         this.updateVolume = function() {
+
+            //alert("about to set vol to " + globalVolume + " x " + this.volumeProportion);
             this._getActiveAudio().volume = globalVolume * this.volumeProportion;
         };
 
@@ -526,7 +528,6 @@ GNU General Public License for more details.
               }
             }
           }
-
           return [clipName, volumeProportion, overlap, loop];
     }
 
