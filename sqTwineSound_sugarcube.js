@@ -146,8 +146,9 @@ GNU General Public License for more details.
 
     //------------- sqAudio ----------------
     //--------------------------------------
-    function sqAudio(clipName, fileExt) {
+    function sqAudio(fullPath, clipName, fileExt) {
 
+        this.fullPath = fullPath;
         this.clipName = clipName; // Let a clip know its own name
         this.fileExt = fileExt;
 
@@ -160,7 +161,7 @@ GNU General Public License for more details.
         this.mainAudio = new Audio();
         this.partnerAudio = new Audio();
 
-        this.mainAudio.setAttribute("src", this.clipName + "." + this.fileExt);
+        this.mainAudio.setAttribute("src", this.fullPath);
         if (this.mainAudio.canPlayType) {
             for (var i = -1; i < fileExtensions.length; i += 1) {
                 if (i >= 0) fileExt = fileExtensions[i];
@@ -168,14 +169,14 @@ GNU General Public License for more details.
             }
             if (i < fileExtensions.length) {
                 this.mainAudio.interval = null;
-                this.partnerAudio.setAttribute("src", this.clipName + "." + this.fileExt);
+                this.partnerAudio.setAttribute("src", this.fullPath);
                 this.partnerAudio.interval = null;
                 this.isPlayable = true;
 
             } else {
               console.log("Browser can't play '" + this.clipName + "'");
             }
-        }   
+        }     
 
         // Convenience method for getting duration
         // TODO : protect this against audio not being loaded yet
@@ -232,6 +233,7 @@ GNU General Public License for more details.
                   audioObj.currentTime = 0;
               }
           }, updateInterval);
+
         };
 
 
@@ -393,16 +395,20 @@ GNU General Public License for more details.
 
     // Verify that the audio can be played in browser
     //
-    function parseAudio(c, e) {
+    function parseAudio(c) {
 
-        var d = c.exec(div.innerHTML); // returns list of form ["accordion.mp3",accordion,mp3]
+        var d = c.exec(div.innerHTML); // returns list of form ["http://domain.com/path/to/accordion.mp3",path/to/accordion,mp3]
 
         while(d) {
             if (d) {
-
                 if (!clips.hasOwnProperty(d[1])) {
-                  var sqAudioObj = new sqAudio(d[1].toString(), d[2].toString());
-                  if (sqAudioObj.isPlayable) clips[d[1].toString()] = sqAudioObj;
+
+                  var parser = document.createElement('a');
+                  parser.href = d[1].toString();
+                  var pathnameSubstrings = parser.pathname.split("/");
+                  var clipName = pathnameSubstrings[pathnameSubstrings.length-1];
+                  var sqAudioObj = new sqAudio(parser.href + "." + d[2].toString(), clipName, d[2].toString());
+                  if (sqAudioObj.isPlayable) { clips[clipName] = sqAudioObj;}
                 }
             }
             d = c.exec(div.innerHTML); // yes, we could just do a do/while, but some envs don't like that
@@ -439,7 +445,7 @@ GNU General Public License for more details.
     //
     function getSoundTrack(clipName) {
         clipName = cleanClipName(clipName.toString());
-        if (!clips.hasOwnProperty(clipName)) { this.error("Given clipName " + clipName + " does not exist in this project. Please check your variable names."); }
+        if (!clips.hasOwnProperty(clipName)) { return this.error("Given clipName " + clipName + " does not exist in this project. Please check your variable names."); }
         return clips[clipName];
     }
 
@@ -525,6 +531,11 @@ GNU General Public License for more details.
     // Get the clipName up to the . if a . exists, otherwise do no harm
     //
     function cleanClipName(clipName) {
+
+      var parser = document.createElement('a');
+      parser.href = clipName.toString();
+      var pathnameSubstrings = parser.pathname.split("/");
+      clipName = pathnameSubstrings[pathnameSubstrings.length-1];
       return clipName.lastIndexOf(".") > -1 ? clipName.slice(0, clipName.lastIndexOf(".")) : clipName;
     }
 
