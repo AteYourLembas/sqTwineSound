@@ -155,7 +155,7 @@ GNU General Public License for more details.
 
         // Defaults
         this.volumeProportion = 1.0; // By default, full volume
-        this.overlap = defaultOverlap; // By default, 1000 ms (1 second)
+        this.overlap = defaultOverlap; // By default, defaultOverlap ms
         this.isPlayable = false; // Assume audio is not playable
         this.looping = false; // Assume audio not looping
         this.alternate = false;

@@ -77,6 +77,7 @@ GNU General Public License for more details.
 
     var globalVolume = 1.0;
     var updateInterval = 10; //Update sound volume, etc. once every 10 ms
+    var defaultOverlap = 1000; //Default track overlap is 1000 ms
     var minVolume = 0.01; // Minimum possible volume -- 0 is mute, so we want somethings slightly above that
     var soundInterval = 0.1; // Creates an interval of 1/10 creates ten stages of loudness. Used by quieter/louder. Feel free to tweak
     var fileExtensions = ["ogg", "mp3", "wav", "webm"]; // Acceptable file extensions for audio
@@ -169,7 +170,7 @@ GNU General Public License for more details.
 
         // Defaults
         this.volumeProportion = 1.0; // By default, full volume
-        this.overlap = 1000; // By default, 1000 ms (1 second)
+        this.overlap = defaultOverlap; // By default, defaultOverlap ms
         this.isPlayable = false; // Assume audio is not playable
         this.looping = false; // Assume audio not looping
         this.alternate = false;
@@ -615,7 +616,7 @@ GNU General Public License for more details.
 
           var soundtrack = getSoundTrack(args[0]);
           var volumeProportion = args[1] !== undefined ? args[1] : soundtrack.volumeProportion;
-          soundtrack.overlap = args[2] !== undefined ? args[2] : 0;
+          soundtrack.overlap = args[2] !== undefined ? args[2] : defaultOverlap;
           var loop = args[3] !== undefined ? args[3] : false;
           soundtrack.setVolumeProportion(volumeProportion);
           soundtrack.updateVolume();
@@ -651,7 +652,7 @@ GNU General Public License for more details.
           for (var index = 0; index < clipNames.length; index++) {
                 var soundtrack = getSoundTrack(cleanClipName(clipNames[index]));
                 var volumeProportion = args[1] !== undefined ? args[1] : soundtrack.volumeProportion;
-                soundtrack.overlap = args[2] !== undefined ? args[2] : 0;
+                soundtrack.overlap = args[2] !== undefined ? args[2] : defaultOverlap;
                 var loop = args[3] !== undefined ? args[3] : false;
                 soundtrack.setVolumeProportion(volumeProportion);
                 soundtrack.updateVolume();
@@ -743,7 +744,7 @@ GNU General Public License for more details.
 
        REQUIRED: clipName  
        OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
-       OPTIONAL: number of milliseconds to overlap/crossfade the loop (0 ms by default)
+       OPTIONAL: number of milliseconds to overlap/crossfade the loop (defaultOverlap by default)
     */    
     macros.loopsound = {
         handler: function () {
@@ -752,7 +753,7 @@ GNU General Public License for more details.
 
           var soundtrack = getSoundTrack(args[0]);
           var volumeProportion = args[1] !== undefined ? args[1] : soundtrack.volumeProportion;
-          soundtrack.overlap = args[2] !== undefined ? args[2] : 0;
+          soundtrack.overlap = args[2] !== undefined ? args[2] : defaultOverlap;
           soundtrack.setVolumeProportion(volumeProportion);
           soundtrack.updateVolume();
           soundtrack.loop();
