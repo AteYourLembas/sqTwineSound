@@ -23,12 +23,12 @@ p11
 (dp13
 S'selected'
 p14
-I00
+I01
 sS'pos'
 p15
 (lp16
-I15
-aI7
+I14
+aI12
 asS'passage'
 p17
 (itiddlywiki
@@ -132,7 +132,7 @@ tp51
 Rp52
 sbsa(dp53
 g14
-I01
+I00
 sg15
 (lp54
 I10
