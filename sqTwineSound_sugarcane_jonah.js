@@ -414,7 +414,7 @@ GNU General Public License for more details.
     //
     function parseAudio(c) {
 
-        var d = c.exec(div.innerHTML); // returns list of form ["http://domain.com/path/to/accordion.mp3",path/to/accordion,mp3]
+        var d = c.exec(div.innerHTML);
 
         while(d) {
             if (d) {
@@ -571,7 +571,7 @@ GNU General Public License for more details.
   /***********************************************************
   */
 
-    /* <<updatevolume "backgroundMusic.mp3" 0.5>>
+    /* updatevolume
     
      Given a decimal between 0.0 and 1.0, 
      updates the clip's volume proportion and the clip's actual volume
@@ -588,29 +588,16 @@ GNU General Public License for more details.
     };
 
     /**
-      <<playsound "meow.mp3">> OR <<playsound "meow.mp3" 0.8 true 200>>
+      playsound
      
        This version of the macro lets you do a little bit of sound mixing.
      
        Parameters:
 
-           REQUIRED: clipName (e.g. "backgroundMusic.mp3")     
+           REQUIRED: clipName    
            OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
            OPTIONAL: number of milliseconds to overlap/crossfade the loop (0 ms by default)
            OPTIONAL: true if you'd like to loop, false if no
-     
-       So this plays a clip normally, at full global volume
-     
-           <<playsound $walla">>
-     
-       OR this fades in a quiet background $walla that will loop and crossfade with 2000 ms (2 seconds) of overlap:
-     
-           <<playsound $walla 0.2 2000 true>>
-     
-       And this plays a louder $meow on top:
-     
-           <<playsound $meow 1.0>>
-     
      
      */
     macros.playsound = {
@@ -629,14 +616,14 @@ GNU General Public License for more details.
     };
 
 
-    /* <<playsounds ["spookyMusic.mp3", "footsteps.mp3"] 0.5 true>>
+    /* playsounds
     
       Play multiple sounds at once (picking up where we left off)
       If you give it no sounds to play, it quietly ignores the command.
 
       Parameters:
 
-          OPTIONAL: clipName (e.g. "backgroundMusic.mp3" or $backgroundMusic)
+          OPTIONAL: clipName
           OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
           OPTIONAL: number of milliseconds to overlap/crossfade (0 ms by default)
           OPTIONAL: true if you'd like to loop, false if no
@@ -667,14 +654,14 @@ GNU General Public License for more details.
 
 
 
-    /* <<pausesound "backgroundMusic.ogg">> 
+    /* pausesound
     
-     Pauses "backgroundMusic.ogg" at its current location. 
-     Use <<playsound "trees.ogg" >> to resume it.
+     Pauses audio at its current location. 
+     Use playsound to resume it.
 
      Parameters:
 
-         REQUIRED: clipName (e.g. "backgroundMusic.mp3")
+         REQUIRED: clipName
 
     */  
     macros.pausesound = {
@@ -702,14 +689,14 @@ GNU General Public License for more details.
       }
     };
 
-    /* <<stopsound "backgroundMusic.mp3">>
+    /* stopsound 
      
       Stop the given sound immediately
       If the sound is played again, it will play from the beginning
   
       Parameters:
 
-          REQUIRED: clipName (e.g. "backgroundMusic.mp3")
+          REQUIRED: clipName
     */    
     macros.stopsound = {
       handler: function() {
@@ -737,7 +724,7 @@ GNU General Public License for more details.
         }
     };
 
-    /* <<loopsound "backgroundMusic.mp3">>
+    /* loopsound
       
       Starts playing the given clip on repeat.
       Note that browsers will not necessarily play looping audio seamlessly.
@@ -746,7 +733,7 @@ GNU General Public License for more details.
         
       Parameters:
 
-       REQUIRED: clipName (e.g. "backgroundMusic.mp3")     
+       REQUIRED: clipName  
        OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
        OPTIONAL: number of milliseconds to overlap/crossfade the loop (0 ms by default)
     */    
@@ -765,14 +752,14 @@ GNU General Public License for more details.
     };
 
 
-    /* <<unloopsound "heartbeat.mp3">>
+    /* unloopsound
     
       Let the given sound stop when it finishes its current loop
       (so the sound no longer repeats.)
 
       Parameters:
 
-          REQUIRED: clipName (e.g. "backgroundMusic.mp3")     
+          REQUIRED: clipName   
 
     */ 
     macros.unloopsound = {
@@ -783,13 +770,13 @@ GNU General Public License for more details.
     };
 
 
-    /* <<fadeinsound "heartbeat.mp3">>
+    /* fadeinsound
     
       Identical to loopsound, but fades in the sound over 2 seconds.
 
       Parameters:
 
-          REQUIRED: clipName (e.g. "backgroundMusic.mp3")     
+          REQUIRED: clipName    
           OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
           OPTIONAL: number of milliseconds to overlap/crossfade the loop (defaults to clip's last set overlap)
 
@@ -807,13 +794,13 @@ GNU General Public License for more details.
         }
     };
 
-    /* <<fadeinsounds ["moodMusic.mp3", "footsteps.mp3"]>>
+    /* fadeinsounds
 
         Fade in multiple sounds at once.
     
       Parameters:
 
-          REQUIRED: clipNames as list (e.g. ["moodMusic.mp3", "footsteps.mp3"])     
+          REQUIRED: clipNames as list   
           OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
           OPTIONAL: number of milliseconds to overlap/crossfade the loop (defaults to clip's last set overlap)
     
@@ -840,13 +827,13 @@ GNU General Public License for more details.
         }
     };
 
-    /* <<fadeoutsound "birdsong.mp3">>
+    /* fadeoutsound
     
       Identical to stopsound, but fades out the sound over the stored fade duration (overlap).
     
       Parameters:
 
-          REQUIRED: clipName (e.g. "backgroundMusic.mp3" or $backgroundMusic)
+          REQUIRED: clipName
 
     */
     macros.fadeoutsound = {
@@ -857,14 +844,14 @@ GNU General Public License for more details.
     };
 
 
-    /* <<fadeoutsounds ["moodMusic.mp3", "footsteps.mp3"]>>
+    /* fadeoutsounds
     
       Fade out multiple sounds at once.
       If you give it no sounds to play, it quietly ignores the command.
 
       Parameters:
 
-          REQUIRED: clipNames as list (e.g. ["moodMusic.mp3", "footsteps.mp3"])     
+          REQUIRED: clipNames as list  
     
     */
     macros.fadeoutsounds = {
@@ -910,7 +897,7 @@ GNU General Public License for more details.
     };
 
 
-    /* <<jumpscare "scream.mp3">>
+    /* jumpscare
     
      Play the clip at maximum story volume
      Don't affect any stored volume options

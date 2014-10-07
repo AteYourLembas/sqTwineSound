@@ -182,6 +182,7 @@ GNU General Public License for more details.
         // TODO : protect this against audio not being loaded yet
         //
         this.getDuration = function () {
+
             return this.mainAudio.duration;
         };
 
@@ -277,7 +278,7 @@ GNU General Public License for more details.
           // Might as well garbage collect the old crossfadeTimeout, too.
           //
           //if (sqAudioObj.crossfadeTimeout !== undefined) { sqAudioObj.crossfadeTimeout.stopAndClear(); delete sqAudioObj.crossfadeTimeout; }
-          //if (isNaN(sqAudioObj.getDuration())) { this.error("Can't loop because duration is not known (audio not loaded, probably not found.)"); return; }
+          //if (isNaN(sqAudioObj.getDuration())) { throwError("Can't loop because duration is not known (audio not loaded, probably not found.)"); return; }
           //sqAudioObj.crossfadeTimeout = new pausableTimeout(sqAudioObj._crossfadeLoop, [sqAudioObj, nextAudioObj]); 
           //sqAudioObj.crossfadeTimeout.activate(sqAudioObj.getDuration()*1000-sqAudioObj.overlap);
 
@@ -373,7 +374,7 @@ GNU General Public License for more details.
             // Create new timeout if one does not already exist; otherwise just reuse the existing one
             //
             this.crossfadeTimeout = (this.crossfadeTimeout === undefined) ? new pausableTimeout(this._crossfadeLoop, [this, activeAudioObj]) : this.crossfadeTimeout; 
-            if (isNaN(this.getDuration())) { this.error("Can't loop because duration is not known (audio not loaded, probably not found.)"); return; }
+            if (isNaN(this.getDuration())) { return throwError("Can't loop because duration is not known (audio not loaded, probably not found.)"); }
             this.crossfadeTimeout.activate((this.getDuration()*1000)-this.overlap);
             activeAudioObj.play();
         };
@@ -397,7 +398,7 @@ GNU General Public License for more details.
     //
     function parseAudio(c) {
 
-        var d = c.exec(div.innerHTML); // returns list of form ["http://domain.com/path/to/accordion.mp3",path/to/accordion,mp3]
+        var d = c.exec(div.innerHTML); // returns list of form ["url/to/audio.fileType",/to/audio,fileType]
 
         while(d) {
             if (d) {
@@ -445,8 +446,9 @@ GNU General Public License for more details.
     //
     function getSoundTrack(clipName) {
         clipName = cleanClipName(clipName.toString());
-        if (!clips.hasOwnProperty(clipName)) { return this.error("Given clipName " + clipName + " does not exist in this project. Please check your variable names."); }
+        if (!clips.hasOwnProperty(clipName)) { return throwError("Given clipName " + clipName + " does not exist in this project. Please check your variable names."); }
         return clips[clipName];
+
     }
 
 
@@ -455,7 +457,7 @@ GNU General Public License for more details.
     function fadeSound(clipName, fadeIn) {
 
       var soundtrack = getSoundTrack(clipName);
-      if (soundtrack === "undefined") { return this.error("audio clip " + clipName + " not found"); } 
+      if (soundtrack === "undefined") { return throwError("audio clip " + clipName + " not found"); } 
       soundtrack.fadeSound(fadeIn);
       
     }
@@ -510,16 +512,16 @@ GNU General Public License for more details.
             if (requiredArgs.hasOwnProperty(requiredArg)) {
               switch (requiredArg) {
                 case clipNameLabel :
-                  if (clipName === undefined) { return this.error("No audio clip name specified."); } 
+                  if (clipName === undefined) { return throwError("No audio clip name specified."); } 
                   break;
                 case volumeProportionLabel :
-                  if (volumeProportion === undefined || volumeProportion > 1.0 || volumeProportion < 0.0) { return this.error("No volume proportion specified (must be a decimal number no smaller than 0.0 and no bigger than 1.0.)"); }
+                  if (volumeProportion === undefined || volumeProportion > 1.0 || volumeProportion < 0.0) { return throwError("No volume proportion specified (must be a decimal number no smaller than 0.0 and no bigger than 1.0.)"); }
                   break;
                 case overlapLabel :
-                  if (overlap === undefined) { return this.error("No fade duration specified (must be a number in milliseconds greater than + " + updateInterval + " ms.)"); }
+                  if (overlap === undefined) { return throwError("No fade duration specified (must be a number in milliseconds greater than + " + updateInterval + " ms.)"); }
                   break;
                 case loopLabel :
-                  if (loop === undefined) { return this.error("No loop flag provided (must be a boolean, aka true or false.)"); }
+                  if (loop === undefined) { return throwError("No loop flag provided (must be a boolean, aka true or false.)"); }
                   break;
               }
             }
@@ -553,7 +555,7 @@ GNU General Public License for more details.
   /***********************************************************
   */
 
-    /* <<updatevolume $backgroundMusic 0.5>>
+    /* updatevolume
     
      Given a decimal between 0.0 and 1.0, 
      updates the clip's volume proportion and the clip's actual volume
@@ -569,29 +571,16 @@ GNU General Public License for more details.
         }
     });
 
-    /**
-      <<playsound "meow.mp3">> OR <<playsound "meow" 0.8>> OR <<playsound $meow 0.8 true>> OR <<playsound $meow 0.8 true 200>>
-     
+    /** playsound     
+
        This version of the macro lets you do a little bit of sound mixing.
      
        Parameters:
 
-           REQUIRED: clipName (e.g. "backgroundMusic.mp3" or $backgroundMusic)     
+           REQUIRED: clipName  
            OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
            OPTIONAL: number of milliseconds to overlap/crossfade the loop (0 ms by default)
            OPTIONAL: true if you'd like to loop, false if no
-     
-       So this plays a clip normally, at full global volume
-     
-           <<playsound $walla">>
-     
-       OR this fades in a quiet background $walla that will loop and crossfade with 2000 ms (2 seconds) of overlap:
-     
-           <<playsound $walla 0.2 2000 true>>
-     
-       And this plays a louder $meow on top:
-     
-           <<playsound $meow 1.0>>
      
      
      */
@@ -611,15 +600,14 @@ GNU General Public License for more details.
     });
 
 
-    /* <<set $spookySounds = [$moodMusic, $footSteps]>>
-      <<playsounds $spookySounds 0.5 true>>
+    /* playsounds
     
       Play multiple sounds at once (picking up where we left off)
       If you give it no sounds to play, it quietly ignores the command.
 
       Parameters:
 
-          OPTIONAL: clipName (e.g. "backgroundMusic.mp3" or $backgroundMusic)
+          OPTIONAL: clipName
           OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
           OPTIONAL: number of milliseconds to overlap/crossfade (0 ms by default)
           OPTIONAL: true if you'd like to loop, false if no
@@ -650,14 +638,14 @@ GNU General Public License for more details.
 
 
 
-    /* <<pausesound "backgroundMusic.ogg">> 
+    /* pausesound
     
-     Pauses "backgroundMusic.ogg" at its current location. 
-     Use <<playsound "trees.ogg" >> to resume it.
+     Pauses clip at its current location. 
+     Use playsound to resume it.
 
      Parameters:
 
-         REQUIRED: clipName (e.g. "backgroundMusic.mp3" or $backgroundMusic)
+         REQUIRED: clipName
 
     */  
     macros.add("pausesound", {
@@ -685,14 +673,14 @@ GNU General Public License for more details.
       }
     });
 
-    /* <<stopsound $backgroundMusic>>
+    /* stopsound
      
       Stop the given sound immediately
       If the sound is played again, it will play from the beginning
   
       Parameters:
 
-          REQUIRED: clipName (e.g. "backgroundMusic.mp3" or $backgroundMusic)
+          REQUIRED: clipName 
     */    
     macros.add("stopsound", {
       handler: function() {
@@ -720,7 +708,7 @@ GNU General Public License for more details.
         }
     });
 
-    /* <<loopsound "backgroundMusic.mp3">>
+    /* loopsound
       
       Starts playing the given clip on repeat.
       Note that browsers will not necessarily play looping audio seamlessly.
@@ -729,7 +717,7 @@ GNU General Public License for more details.
         
       Parameters:
 
-       REQUIRED: clipName (e.g. "backgroundMusic.mp3" or $backgroundMusic)     
+       REQUIRED: clipName   
        OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
        OPTIONAL: number of milliseconds to overlap/crossfade the loop (0 ms by default)
     */    
@@ -737,7 +725,6 @@ GNU General Public License for more details.
         handler: function () {
           
           var args = manageCommonArgs(this, [clipNameLabel]);
-
           var soundtrack = getSoundTrack(this.args[0]);
           var volumeProportion = args[1] !== undefined ? args[1] : soundtrack.volumeProportion;
           soundtrack.overlap = args[2] !== undefined ? args[2] : 0;
@@ -748,14 +735,14 @@ GNU General Public License for more details.
     });
 
 
-    /* <<unloopsound $heartbeat>>
+    /* unloopsound 
     
       Let the given sound stop when it finishes its current loop
       (so the sound no longer repeats.)
 
       Parameters:
 
-          REQUIRED: clipName (e.g. "backgroundMusic.mp3" or $backgroundMusic)     
+          REQUIRED: clipName 
 
     */ 
     macros.add("unloopsound", {
@@ -766,13 +753,13 @@ GNU General Public License for more details.
     });
 
 
-    /* <<fadeinsound "heartbeat.mp3">>
+    /* fadeinsound
     
       Identical to loopsound, but fades in the sound over 2 seconds.
 
       Parameters:
 
-          REQUIRED: clipName (e.g. "backgroundMusic.mp3" or $backgroundMusic)     
+          REQUIRED: clipName
           OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
           OPTIONAL: number of milliseconds to overlap/crossfade the loop (defaults to clip's last set overlap)
 
@@ -790,13 +777,13 @@ GNU General Public License for more details.
         }
     });
 
-    /* <<fadeinsounds ["moodMusic.mp3", "footsteps.mp3"]>>
+    /* fadeinsounds
 
         Fade in multiple sounds at once.
     
       Parameters:
 
-          REQUIRED: clipNames as list (e.g. [$backgroundMusic, $footsteps])     
+          REQUIRED: clipNames as list  
           OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
           OPTIONAL: number of milliseconds to overlap/crossfade the loop (defaults to clip's last set overlap)
     
@@ -823,13 +810,13 @@ GNU General Public License for more details.
         }
     });
 
-    /* <<fadeoutsound $birdsong>>
+    /* fadeoutsound
     
       Identical to stopsound, but fades out the sound over the stored fade duration (overlap).
     
       Parameters:
 
-          REQUIRED: clipName (e.g. "backgroundMusic.mp3" or $backgroundMusic)
+          REQUIRED: clipName 
 
     */
     macros.add("fadeoutsound", {
@@ -840,14 +827,14 @@ GNU General Public License for more details.
     });
 
 
-    /* <<fadeoutsounds [$moodMusic, $footsteps]>>
+    /* fadeoutsounds
     
       Fade out multiple sounds at once.
       If you give it no sounds to play, it quietly ignores the command.
 
       Parameters:
 
-          REQUIRED: clipNames as list (e.g. [$backgroundMusic, $footsteps])     
+          REQUIRED: clipNames as list    
     
     */
     macros.add("fadeoutsounds", {
@@ -892,7 +879,7 @@ GNU General Public License for more details.
     });
 
 
-    /* <<jumpscare "scream.mp3">>
+    /* jumpscare
     
      Play the clip at maximum story volume
      Don't affect any stored volume options
