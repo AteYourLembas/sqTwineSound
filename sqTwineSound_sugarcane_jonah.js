@@ -233,7 +233,15 @@ GNU General Public License for more details.
               //Use easing to prevent sound popping in or out
               //
               var desiredVolume = easeInOutSine(currentIteration, startVolume, deltaVolume, totalIterations);
-              audioObj.volume = desiredVolume;
+              
+              //alert("Well desiredVol is " + desiredVolume + " cos currIter " + currentIteration + " startVol " + startVolume + " delta vol " + deltaVolume + " total iter " + totalIterations);
+              //This should never happen, but if it does, skip the fade
+              if (isNaN(desiredVolume)) {
+                audioObj.volume = startVolume + deltaVolume;
+                console.log("There was a problem with the fade. Possibly overlap " + this.overlap + " is shorter than updateInterval " + updateInterval + "? ");
+              } else {
+                audioObj.volume = desiredVolume;
+              }
               currentIteration += 1;
             
               if (audioObj.volume === (startVolume + deltaVolume)) { 

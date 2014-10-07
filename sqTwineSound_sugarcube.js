@@ -77,6 +77,7 @@ GNU General Public License for more details.
 
     var globalVolume = 1.0;
     var updateInterval = 10; //Update sound volume, etc. once every 10 ms
+    var defaultOverlap = 1000; //Default track overlap is 1000 ms
     var minVolume = 0.01; // Minimum possible volume -- 0 is mute, so we want somethings slightly above that
     var soundInterval = 0.1; // Creates an interval of 1/10 creates ten stages of loudness. Used by quieter/louder. Feel free to tweak
     var fileExtensions = ["ogg", "mp3", "wav", "webm"]; // Acceptable file extensions for audio
@@ -154,7 +155,7 @@ GNU General Public License for more details.
 
         // Defaults
         this.volumeProportion = 1.0; // By default, full volume
-        this.overlap = 1000; // By default, 1000 ms (1 second)
+        this.overlap = defaultOverlap; // By default, 1000 ms (1 second)
         this.isPlayable = false; // Assume audio is not playable
         this.looping = false; // Assume audio not looping
         this.alternate = false;
@@ -219,7 +220,15 @@ GNU General Public License for more details.
               //Use easing to prevent sound popping in or out
               //
               var desiredVolume = easeInOutSine(currentIteration, startVolume, deltaVolume, totalIterations);
-              audioObj.volume = desiredVolume;
+              
+              //alert("Well desiredVol is " + desiredVolume + " cos currIter " + currentIteration + " startVol " + startVolume + " delta vol " + deltaVolume + " total iter " + totalIterations);
+              //This should never happen, but if it does, skip the fade
+              if (isNaN(desiredVolume)) {
+                audioObj.volume = startVolume + deltaVolume;
+                console.log("There was a problem with the fade. Possibly overlap " + this.overlap + " is shorter than updateInterval " + updateInterval + "? ");
+              } else {
+                audioObj.volume = desiredVolume;
+              }
               currentIteration += 1;
             
               if (audioObj.volume === (startVolume + deltaVolume)) { 
@@ -592,7 +601,7 @@ GNU General Public License for more details.
 
           var soundtrack = getSoundTrack(this.args[0]);
           var volumeProportion = args[1] !== undefined ? args[1] : soundtrack.volumeProportion;
-          soundtrack.overlap = args[2] !== undefined ? args[2] : 0;
+          soundtrack.overlap = args[2] !== undefined ? args[2] : defaultOverlap;
           var loop = args[3] !== undefined ? args[3] : false;
           soundtrack.setVolumeProportion(volumeProportion);
           soundtrack.updateVolume();
@@ -628,7 +637,7 @@ GNU General Public License for more details.
           for (var index = 0; index < clipNames.length; index++) {
                 var soundtrack = getSoundTrack(cleanClipName(clipNames[index]));
                 var volumeProportion = args[1] !== undefined ? args[1] : soundtrack.volumeProportion;
-                soundtrack.overlap = args[2] !== undefined ? args[2] : 0;
+                soundtrack.overlap = args[2] !== undefined ? args[2] : defaultOverlap;
                 var loop = args[3] !== undefined ? args[3] : false;
                 soundtrack.setVolumeProportion(volumeProportion);
                 soundtrack.updateVolume();
@@ -728,7 +737,7 @@ GNU General Public License for more details.
           var args = manageCommonArgs(this, [clipNameLabel]);
           var soundtrack = getSoundTrack(this.args[0]);
           var volumeProportion = args[1] !== undefined ? args[1] : soundtrack.volumeProportion;
-          soundtrack.overlap = args[2] !== undefined ? args[2] : 0;
+          soundtrack.overlap = args[2] !== undefined ? args[2] : defaultOverlap;
           soundtrack.setVolumeProportion(volumeProportion);
           soundtrack.updateVolume();
           soundtrack.loop();
