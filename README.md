@@ -94,11 +94,11 @@ SUITE CONTENTS
 
 KNOWN ISSUES
 
-- Works in Safari Version 7.0.6, Internet Explorer 11, and Chrome Version 37. Not tested on Opera. Performs best in Chrome.
+- Works in Safari Version 7.0.6, Internet Explorer 11, and Chrome Version 37. Not tested on Opera. iOS will not play multiple tracks at once, so seamless loops will not work. Also on iOS sound must be initiated by an action (e.g a click) before audio will actually play.
 
 - If your story throws an alert, or whenever sound playback is paused by something other than another sqTwineSound macro, the start of the next loop will be delayed (by the amount of time the alert was visible.) One way to work around this is to manually pause sound in your passage (<<pausesound $backgroundMusic>>) before you throw up the alert, and then resume the sound <<playsound $backgroundMusic>>again after the alert.
 
-- As of Twine v 1.4.2, the Sugarcane and Jonah story formats don't seem to hand off variables to these custom macros. For example, if you're using Sugarcane or Jonah, please use <<playsound "music.mp3">> instead of playsound <<$music>>. Sugarcane and Jonah also don't have the neat <<button>> macro that the Sugarcube story format does, so making volume control buttons could be a bit of an adventure. I personally prefer the Sugarcube story format, but I'm not the boss of you.
+- Sugarcane and Jonah don't have the neat <<button>> macro that the Sugarcube story format does, so making volume control buttons could be a bit of an adventure.
 
 
 BONUS FEATURES
