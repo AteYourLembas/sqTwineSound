@@ -108,11 +108,22 @@ GNU General Public License for more details.
 
         var args = Array.prototype.slice.call(givenArgs);
 
-        if (args.length > 2) {
-         return args[2].toString().split(",");
-        }
+        //alert(" split args " + args);
+        //alert("typeof " + typeof(givenArgs[givenArgs.length-1]));
+        //alert(givenArgs[givenArgs.length-1].fullArgs());
 
-        return args;
+        var tempArgs = [];
+
+        if (args.length > 2) {
+         tempArgs = args[2].toString().split(",");
+        }
+        for (var i = 0; i < tempArgs.length; i++) {
+          if (typeof(tempArgs[i]) == "string" && tempArgs[i].indexOf("$") === 0) {
+              var varName = tempArgs[i].slice(1, tempArgs[i].length);
+              if (state.history[0].variables.hasOwnProperty(varName)) tempArgs[i] = state.history[0].variables[varName];
+          }
+        }
+        return tempArgs;
     }
 
 
@@ -471,7 +482,7 @@ GNU General Public License for more details.
     //
     function getSoundTrack(clipName) {
         clipName = cleanClipName(clipName.toString());
-        if (!clips.hasOwnProperty(clipName)) { error("Given clipName " + clipName + " does not exist in this project. Please check your variable names."); }
+        if (!clips.hasOwnProperty(clipName)) { return error("Given clipName " + clipName + " does not exist in this project. Please check your variable names."); }
         return clips[clipName];
     }
 
@@ -613,7 +624,6 @@ GNU General Public License for more details.
       handler : function () {
 
           var args = manageCommonArgs(arguments, [clipNameLabel]);
-
           var soundtrack = getSoundTrack(args[0]);
           var volumeProportion = args[1] !== undefined ? args[1] : soundtrack.volumeProportion;
           soundtrack.overlap = args[2] !== undefined ? args[2] : defaultOverlap;
