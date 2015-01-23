@@ -1,7 +1,6 @@
 /*
 sqTwineSound HTML5 Sound Macro Suite
 Copyright 2014 Tory Hoke
-
 Program URI: http://www.sub-q.com/plugins/sqTwineSound/
 Description: Sound macros for Twine creations, including controls for volume, fade interval, and playing multiple tracks at once.
 Version: 0.8.0
@@ -12,18 +11,13 @@ License URI: http://www.opensource.org/licenses/gpl-license.php
 Repository: https://github.com/AteYourLembas/sqTwineSound
 FAQ / Q & A: http://sub-q.com/questions (password: ThinkVast)
 Bug Reports/Feature Requests: http://sub-q.com/forums/topic/what-would-you-like-to-see-sqtwinesound-do-that-its-not-doing/ (password: ThinkVast)
-
       sub-Q.com is password-protected while it's in beta (until January 2015.)
       Please kick the tires and report any issues with the website
       via the sub-Q.com Contact form.
-
-
 This program based on:
 Twine: HTML5 sound macros by Leon Arnott of Glorious Trainwrecks
 the source and influence of which appear under a Creative Commons CC0 1.0 Universal License
-
 This program uses
-
     easeInOutSine()
     Copyright © 2001 Robert Penner
     All rights reserved.
@@ -55,7 +49,6 @@ This program uses
      AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
      NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
      OF THE POSSIBILITY OF SUCH DAMAGE. 
-
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -65,7 +58,6 @@ This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
 */
 
 (function () {
@@ -582,11 +574,9 @@ GNU General Public License for more details.
     });
 
     /** playsound     
-
        This version of the macro lets you do a little bit of sound mixing.
      
        Parameters:
-
            REQUIRED: clipName  
            OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
            OPTIONAL: number of milliseconds to overlap/crossfade the loop (0 ms by default)
@@ -614,9 +604,7 @@ GNU General Public License for more details.
     
       Play multiple sounds at once (picking up where we left off)
       If you give it no sounds to play, it quietly ignores the command.
-
       Parameters:
-
           OPTIONAL: clipName
           OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
           OPTIONAL: number of milliseconds to overlap/crossfade (0 ms by default)
@@ -652,11 +640,8 @@ GNU General Public License for more details.
     
      Pauses clip at its current location. 
      Use playsound to resume it.
-
      Parameters:
-
          REQUIRED: clipName
-
     */  
     macros.add("pausesound", {
       handler: function() {
@@ -689,7 +674,6 @@ GNU General Public License for more details.
       If the sound is played again, it will play from the beginning
   
       Parameters:
-
           REQUIRED: clipName 
     */    
     macros.add("stopsound", {
@@ -726,7 +710,6 @@ GNU General Public License for more details.
       (Well, you probably want something more perceptibe than 1 millisecond!)
         
       Parameters:
-
        REQUIRED: clipName   
        OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
        OPTIONAL: number of milliseconds to overlap/crossfade the loop (0 ms by default)
@@ -749,11 +732,8 @@ GNU General Public License for more details.
     
       Let the given sound stop when it finishes its current loop
       (so the sound no longer repeats.)
-
       Parameters:
-
           REQUIRED: clipName 
-
     */ 
     macros.add("unloopsound", {
         handler: function () {
@@ -766,13 +746,10 @@ GNU General Public License for more details.
     /* fadeinsound
     
       Identical to loopsound, but fades in the sound over 2 seconds.
-
       Parameters:
-
           REQUIRED: clipName
           OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
           OPTIONAL: number of milliseconds to overlap/crossfade the loop (defaults to clip's last set overlap)
-
     */
     macros.add("fadeinsound", {
         handler: function () {
@@ -788,11 +765,9 @@ GNU General Public License for more details.
     });
 
     /* fadeinsounds
-
         Fade in multiple sounds at once.
     
       Parameters:
-
           REQUIRED: clipNames as list  
           OPTIONAL: decimal proportion of volume (0.0 being minimum/mute, and 1.0 being maximum/default)
           OPTIONAL: number of milliseconds to overlap/crossfade the loop (defaults to clip's last set overlap)
@@ -825,9 +800,7 @@ GNU General Public License for more details.
       Identical to stopsound, but fades out the sound over the stored fade duration (overlap).
     
       Parameters:
-
           REQUIRED: clipName 
-
     */
     macros.add("fadeoutsound", {
         handler: function () {
@@ -841,9 +814,7 @@ GNU General Public License for more details.
     
       Fade out multiple sounds at once.
       If you give it no sounds to play, it quietly ignores the command.
-
       Parameters:
-
           REQUIRED: clipNames as list    
     
     */
@@ -915,4 +886,3 @@ GNU General Public License for more details.
 }());
 
 // You read the whole thing! THAT'S PRETTY RAD. Keep up the good work, and happy Twining.
-
