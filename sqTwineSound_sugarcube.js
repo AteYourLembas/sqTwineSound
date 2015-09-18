@@ -172,11 +172,10 @@ GNU General Public License for more details.
         }     
 
         // Convenience method for getting duration
-        // TODO : protect this against audio not being loaded yet
         //
         this.getDuration = function () {
 
-            return this.mainAudio.duration;
+            return this.mainAudio.duration ? this.mainAudio.duration : 1000;
         };
 
         // Get what we consider the current audio track
@@ -377,7 +376,7 @@ GNU General Public License for more details.
             // Create new timeout if one does not already exist; otherwise just reuse the existing one
             //
             this.crossfadeTimeout = (this.crossfadeTimeout === undefined) ? new pausableTimeout(this._crossfadeLoop, [this, activeAudioObj]) : this.crossfadeTimeout; 
-            if (isNaN(this.getDuration())) { return throwError("Can't loop because duration is not known (audio not loaded, probably not found.)"); }
+            if (isNaN(this.getDuration())) { alert("Can't loop because duration is not known (audio not loaded, probably not found.)"); }
             this.crossfadeTimeout.activate((this.getDuration()*1000)-this.overlap);
             activeAudioObj.play();
         };
@@ -449,7 +448,7 @@ GNU General Public License for more details.
     //
     function getSoundTrack(clipName) {
         clipName = cleanClipName(clipName.toString());
-        if (!clips.hasOwnProperty(clipName)) { return throwError("Given clipName " + clipName + " does not exist in this project. Please check your variable names."); }
+        if (!clips.hasOwnProperty(clipName)) { alert("Given clipName " + clipName + " does not exist in this project. Please check your variable names."); }
         return clips[clipName];
 
     }
@@ -460,7 +459,7 @@ GNU General Public License for more details.
     function fadeSound(clipName, fadeIn) {
 
       var soundtrack = getSoundTrack(clipName);
-      if (soundtrack === "undefined") { return throwError("audio clip " + clipName + " not found"); } 
+      if (soundtrack === "undefined") { alert("audio clip " + clipName + " not found"); } 
       soundtrack.fadeSound(fadeIn);
       
     }
@@ -515,16 +514,16 @@ GNU General Public License for more details.
             if (requiredArgs.hasOwnProperty(requiredArg)) {
               switch (requiredArg) {
                 case clipNameLabel :
-                  if (clipName === undefined) { return throwError("No audio clip name specified."); } 
+                  if (clipName === undefined) { alert("No audio clip name specified."); } 
                   break;
                 case volumeProportionLabel :
-                  if (volumeProportion === undefined || volumeProportion > 1.0 || volumeProportion < 0.0) { return throwError("No volume proportion specified (must be a decimal number no smaller than 0.0 and no bigger than 1.0.)"); }
+                  if (volumeProportion === undefined || volumeProportion > 1.0 || volumeProportion < 0.0) { alert("No volume proportion specified (must be a decimal number no smaller than 0.0 and no bigger than 1.0.)"); }
                   break;
                 case overlapLabel :
-                  if (overlap === undefined) { return throwError("No fade duration specified (must be a number in milliseconds greater than + " + updateInterval + " ms.)"); }
+                  if (overlap === undefined) { alert("No fade duration specified (must be a number in milliseconds greater than + " + updateInterval + " ms.)"); }
                   break;
                 case loopLabel :
-                  if (loop === undefined) { return throwError("No loop flag provided (must be a boolean, aka true or false.)"); }
+                  if (loop === undefined) { alert("No loop flag provided (must be a boolean, aka true or false.)"); }
                   break;
               }
             }
@@ -760,7 +759,7 @@ GNU General Public License for more details.
           var volumeProportion = args[1] !== undefined ? args[1] : soundtrack.volumeProportion; 
           soundtrack.overlap = args[2] !== undefined ? args[2] : soundtrack.overlap;
           soundtrack.volumeProportion=volumeProportion;
-          soundtrack.fadeSound(true);
+          soundtrack.mainAudio.addEventListener('loadedmetadata', soundtrack.fadeSound(true));
         }
     });
 
